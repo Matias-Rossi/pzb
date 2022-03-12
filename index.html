@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PZB</title>
+    <!-- CSS Import -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <main>
+        <div id="interface">
+            <div class="pzbContainer">
+                <table cellspacing="24">
+                    <!-- Leuchtmelder -->
+                    <tr class="speed">
+                        <td class="indicator" id="lm55">55</td>
+                        <td class="indicator" id="lm70">70</td>
+                        <td class="indicator" id="lm85">85</td>
+                    </tr>
+                    <tr class="status">
+                        <td class="indicator" id="lmBefehl40">Befehl<br>40</td>
+                        <td class="indicator" id="lm500Hz">500 Hz</td>
+                        <td class="indicator" id="lm1000Hz">1000 Hz</td>
+                    </tr>
+                </table>
+            </div>
+            <div id="controls">
+                <div class="pzbControls">
+                    <img src="img/pzb/befehl.png" alt="Befehl Button" class="pzbControl">
+                    <img src="img/pzb/freiInactive.png" alt="Frei Button" class="pzbControl">
+                    <img src="img/pzb/wachsamInactive.png" alt="Wachsam Button" class="pzbControl">
+                </div>
+            </div>
+        </div>
+        <div class="trainControls flex">
+            <div class="speed flex">
+                <p>Train speed:</p>
+                <input type="range" name="Speed" id="speedSlider" min="0" max="180" value="0">
+                <p id="speedIndicator">0</p>
+            </div>
+        </div>
+    </main>
+    <script src="scripts/lightController.js"></script>
+</body>
+</html>
