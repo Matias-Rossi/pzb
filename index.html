@@ -36,8 +36,13 @@
         </div>
         <div class="trainControls flex">
             <div class="speed flex">
+                <script>
+                    function sliderChange(val) {
+                       document.getElementById('speedIndicator').innerHTML = val;
+                    }
+                </script>
                 <p>Train speed:</p>
-                <input type="range" name="Speed" id="speedSlider" min="0" max="180" value="0">
+                <input type="range" name="Speed" id="speedSlider" min="0" max="180" value="0" oninput="sliderChange(this.value)">
                 <p id="speedIndicator">0</p>
             </div>
         </div>
