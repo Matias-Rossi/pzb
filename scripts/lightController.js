@@ -23,7 +23,7 @@ function blinkAllLights(lightStatus) {
 //Misc/aux
 export let brightText = "white";
 export let darkText = "rgb(150, 150, 150)";
-let switchFunctions = [switchLM55, switchLM70, switchLM85, switchLMBefehl40, switchLM500Hz, switchLM1000Hz];
+let switchFunctions = [switchLM55, switchLM70, switchLM85, switchLMBefehl40, switchLM500Hz, switchLM1000Hz, switchLMG, switchLMS];
 
 export function changeTextColor(lightElement, desiredStatus) {
     lightElement.style.color = desiredStatus? brightText : darkText;
@@ -105,6 +105,28 @@ export function switchLM1000Hz(desiredStatus) {
     }
     else {
         light.style.backgroundImage = "linear-gradient(to right, black, rgb(105, 105, 0) 400px, black 800px)";
+    }
+    changeTextColor(light, desiredStatus);
+}
+
+export function switchLMG(desiredStatus) {
+    let light = document.getElementById("lmG");
+    if (desiredStatus == true) {
+        light.style.backgroundImage = "linear-gradient(to right, black, red 400px, black 800px)";
+    }
+    else {
+        light.style.backgroundImage = "linear-gradient(to right, black, rgb(97, 0, 0) 400px, black 800px)";
+    }
+    changeTextColor(light, desiredStatus);
+}
+
+export function switchLMS(desiredStatus) {
+    let light = document.getElementById("lmS");
+    if (desiredStatus == true) {
+        light.style.backgroundImage = "linear-gradient(to right, black, red 400px, black 800px)";
+    }
+    else {
+        light.style.backgroundImage = "linear-gradient(to right, black, rgb(97, 0, 0) 400px, black 800px)";
     }
     changeTextColor(light, desiredStatus);
 }

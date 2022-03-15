@@ -37,10 +37,15 @@ body {
 
 /* HIGHER ROW INDICATORS */
 
-.speed td {
+.blueSpeedLimit {
     font-size: 140px;
     background-image: linear-gradient(to right, black, rgb(18, 33, 116) 400px, black 800px);
  
+}
+
+#lmG {
+    background-image: linear-gradient(to right, black, rgb(97, 0, 0) 400px, black 800px);
+    font-size: 140px;
 }
 
 /* LOWER ROW INDICATORS */
@@ -55,6 +60,11 @@ body {
 
 #lm1000Hz {
     background-image: linear-gradient(to right, black, rgb(105, 105, 0) 400px, black 800px);
+}
+
+#lmS {
+    background-image: linear-gradient(to right, black, rgb(97, 0, 0) 400px, black 800px);
+    font-size: 140px;
 }
 
 /* PZB Controls */
