@@ -41,6 +41,62 @@
  * Train driver has 2.5 seconds to press 'PZB Wachsam' when going over a magnet.
 */
 
+class Bremskurve {
+    constructor(geschwindigkeitA, geschwindigkeitB, zeit, abstand, restriktivA, restriktivB) {
+        this.geschwindigkeitA = geschwindigkeitA;
+        this.geschwindigkeitB = geschwindigkeitB;
+        this.zeit = zeit;
+        this.abstand = abstand;
+        this.restriktivA = restriktivA;
+        this.restriktivB = restriktivB;
+    }
+}
+class PZBZugArt {
+    constructor(vMax, bremskurve1000Hz, bremskurve500Hz) {
+        this.vMax = vMax;
+        this.bremskurve1000Hz = bremskurve1000Hz;
+        this.bremskurve500Hz = bremskurve500Hz;
+    }
+
+    magnetVMax(magnet, phase, restriktiv) {
+        //Phase: 0 = Geschwindigkeit A; 1 = Geschwindigkeit B; 2 = Darf befreit werden;3 = Überwachung Ende
+        if(magnet == 1000) {
+            if (restriktiv) return this.restriktivA;
+            else return phase == 0? this.bremskurve1000Hz.geschwindigkeitA : this.bremskurve1000Hz.geschwindigkeitB;
+        } else
+        if(magnet == 500) {
+            if (restriktiv) {
+                return phase == 0? this.restriktivA : this.restriktivB;
+            } else return phase == 0? this.bremskurve500Hz.geschwindigkeitA : this.bremskurve500Hz.geschwindigkeitB;
+        } else
+        return this.vMax;
+    }
+
+    getAktivierungKriterium(magnet, phase) {
+        if(magnet == 1000) {
+            switch(phase) {
+                case 0: return ZeitabhaengigeAktivierung(0);
+                case 1: return ZeitabhaengigeAktivierung(23);
+                case 2: return AbstandabhaengigeAktivierung(700);
+                case 3: return AbstandabhaengigeAktivierung(1250);
+            }
+        } else {
+            switch(phase){
+                case 0: return ZeitabhaengigeAktivierung(0);
+                case 1: return AbstandabhaengigeAktivierung(153);
+                case 2:
+                    case 3: return AbstandabhaengigeAktivierung(250);
+            }
+        }
+    }
+
+}
+
+const zugArtO = new PZBZugArt(165, new Bremskurve(165, 85, 23, null, 45, 45), new Bremskurve(65, 45, null, 153, 45, 25));
+const zugArtM = new PZBZugArt(125, new Bremskurve(125, 70, 29, null, 45, 45), new Bremskurve(50, 35, null, 153, 25, 25));
+const zugArtU = new PZBZugArt(105, new Bremskurve(105, 55, 38, null, 45, 45), new Bremskurve(40, 25, null, 153, 25, 25));
+
+/*
 class PZBZugArt {
     constructor(vMax, v1000Hz, zeit1000Hz, v500HzA, v500HzB,v500HzRestriktivIstKonstant) {
         this.vMax = vMax;
@@ -51,28 +107,37 @@ class PZBZugArt {
         this.v500HzRestriktivIstKonstant = v500HzRestriktivIstKonstant;
     }
 
-    magnetVMax(magnet) {
+    magnetVMax(magnet, phase, restriktiv) {
+        //Phase: 0 = bremskurve, 1 = ständig Überwachung
         switch(magnet) {
-            case 1000: return this.v1000Hz;
-            case 500: return this.v500Hz;
+            case 1000: 
+                if (restriktiv) return 45;
+                if(phase == 0) {
+                    return restriktiv? 45 : 165;
+                }
+                else
+                return phase == 0? 165 : 85;
+            case 500:
+                if(restriktiv){ 
+                    if(this.v500HzRestriktivIstKonstant)
+                        return 25;
+                    else 
+                        return 45;
+                } else {
+                    return this.v500HzA;
+                }
             default: return 0;
         }
     }
-
-    magnetFolgendeBeeinflussungAktivierung(magnet) {
-        if(magnet == 1000) {
-            return new ZeitabhaengigeAktivierung(this.zeit1000Hz);
-        } else if (magnet == 500) {
-            return new AbstandabhaengigeAktivierung(153);
-        }
-    }
-
 
 }
 
 const zugArtO = new PZBZugArt(160, 85, 23, 65, 45, false);
 const zugArtM = new PZBZugArt(120, 70, 29, 50, 35, true);
 const zugArtU = new PZBZugArt(105, 55, 38, 40, 25, true);
+
+*/
+
 
 /* Aux Klassen */
 
@@ -81,7 +146,11 @@ class AbstandabhaengigeAktivierung {
         this.abstand = abstand;
     }
 
-    istBeeinflussungGueltig(beeinflussung) {
+    sollteAktiviertWerden(beeinflussung) {
+        return beeinflussung.gefahreneStrecke < this.abstand;
+    }
+
+    istKriteriumErfuellt(beeinflussung) {
         return beeinflussung.gefahreneStrecke < this.abstand;
     }
 }
@@ -91,7 +160,11 @@ class ZeitabhaengigeAktivierung {
         this.zeit = zeit;
     }
 
-    istBeeinflussungGueltig(beeinflussung) {
+    sollteAktiviertWerden(beeinflussung) {
+        return beeinflussung.verstricheneZeit < this.zeit;
+    }
+
+    istKriteriumErfuellt(beeinflussung) {
         return beeinflussung.verstricheneZeit < this.zeit;
     }
 }
@@ -100,6 +173,44 @@ class ZeitabhaengigeAktivierung {
 /* Beeinflussungen */
 
 class Beeinflussung {
+    constructor(art, geschwindigkeitsbegrenzung, aktivierung, darfBefreitWerden, folgendeBeeinflussung) {
+        //Beeinflussung 
+        this.art = art;
+        this.geschwindigkeitsbegrenzung = geschwindigkeitsbegrenzung;
+        this.aktivierung = aktivierung;
+        this.darfBefreitWerden = darfBefreitWerden;
+
+        //Folgende Beeinflusung
+        this.folgendeBeeinflussung = folgendeBeeinflussung;
+
+        //Beeinflussung-Zug Angaben
+        this.verstricheneZeit = 0;
+        this.gefahreneStrecke = 0;
+    }
+
+    istBegonnen() {
+        return this.aktivierung.istKriteriumErfuellt(this);
+    }
+
+    istAbgelaufen() {
+        return this.folgendeBeeinflussung? this.folgendeBeeinflussung.aktivierung.istKriteriumErfuellt(this) : true;
+    }
+ 
+    istAktiv() {
+        return this.istBegonnen(this) && !this.istAbgelaufen(this);
+    }
+
+    folgendeBeeinflussungAktivieren() {
+        const verstricheneZeitAux = this.verstricheneZeit;
+        const gefahreneStreckeAux = this.gefahreneStrecke;
+        this = this.folgendeBeeinflussung;
+        this.verstricheneZeit = verstricheneZeitAux;
+        this.gefahreneStrecke = gefahreneStreckeAux;
+    }
+}
+
+/*
+class Beeinflussung2 {   //Abstract
     constructor(art, geschwindigkeitsbegrenzung, zeitBisAktiv, darfBefreitWerden) {
         this.art = art;
         this.geschwindigkeitsbegrenzung = geschwindigkeitsbegrenzung;
@@ -107,6 +218,10 @@ class Beeinflussung {
         this.darfBefreitWerden = darfBefreitWerden;
         this.verstricheneZeit = 0;
         this.gefahreneStrecke = 0;
+    }
+
+    istAktiv() {
+        return this.verstricheneZeit > this.zeitBisAktiv && !this.istAbgelaufen();
     }
 }
 
@@ -117,8 +232,16 @@ class DirektBeeinflussung extends Beeinflussung {
         super(art, geschwindigkeitsbegrenzung, zeitBisAktiv, darfBefreitWerden);
     }
 
-    istBeeinflussungGueltig() {
-        return this.folgendeAktivierung.istBeeinflussungGueltig(this);
+    istAbgelaufen() {
+        if(this.folgendeAktivierung.sollteAktiviertWerden(this)) {
+            this.folgendeBeeinflussungAktivieren();
+            return true;
+        } else 
+        return false;
+    }
+
+    folgendeBeeinflussungAktivieren() {
+        this = this.folgendeBeeinflussung;
     }
 }
 
@@ -128,11 +251,13 @@ class FolgendeBeeinflussung extends Beeinflussung {
         super(art, geschwindigkeitsbegrenzung, 0, darfBefreitWerden);
     }
 
-    istBeeinflussungGueltig() {
-        return this.ende.istBeeinflussungGueltig(this);
+    istBeeinflussungAktiv() {
+        return this.ende.istBeeinflussungAktiv(this);
     }
-}
 
+
+}
+*/
 class ZugPZB {
     constructor(zugArt) {
         this.zugArt = zugArt;
@@ -141,15 +266,24 @@ class ZugPZB {
         this.restriktivModus = true;
         this.istZwangbremsungAktiv = false;
         this.leuchtmelder = 'restriktiv';
+        this.abstandSeitFrei = 0;
+        this.abstandSeit1000Frei = 0;
     }
 
     neueBeeinflussungDurchMagnet(magnetHz) {
-        let geschwindigkeitsbegrenzung = this.zugArt.magnetVMax(magnetHz);
-        let zeitBisAktiv = magnetHz == 1000? ZeitabhaengigeAktivierung(23) : AbstandabhaengigeAktivierung(153);
-        let folgendeAktivierung = this.zugArt.magnetBeeinflussungAktivierung(magnetHz);
-        let beeinflussung = new DirektBeeinflussung(magnetHz, geschwindigkeitsbegrenzung, zeitBisAktiv, false, folgendeAktivierung);
+        let geschwindigkeitsbegrenzung;
+        if(magnetHz == 1000 && this.abstandSeit1000Frei < 1250)
+            geschwindigkeitsbegrenzung = this.zugArt.magnetVMax(magnetHz, 1, this.restriktivModus);
+        else 
+            geschwindigkeitsbegrenzung = this.zugArt.magnetVMax(magnetHz, 0, this.restriktivModus);
+        let aktivierung = this.zugArt.getAktivierungKriterium(magnetHz, 0);
+
+        let phase3 = new Beeinflussung(magnetHz, this.zugArt.magnetVMax(magnetHz, 3), this.zugArt.getAktivierungKriterium(magnetHz, 3), null);
+        let phase2 = new Beeinflussung(magnetHz, this.zugArt.magnetVMax(magnetHz, 2), this.zugArt.getAktivierungKriterium(magnetHz, 2), phase3);
+        let phase1 = new Beeinflussung(magnetHz, this.zugArt.magnetVMax(magnetHz, 1), this.zugArt.getAktivierungKriterium(magnetHz, 1), phase2);
+        let phase0 = new Beeinflussung(magnetHz, geschwindigkeitsbegrenzung, aktivierung, false, phase1);
         
-        this.beeinflussungHinzufuegen(beeinflussung);
+        this.beeinflussungHinzufuegen(phase0);
     }
 
     beeinflussungHinzufuegen(beeinflussung) {
@@ -178,8 +312,39 @@ class ZugPZB {
         }
         // Keine vorhandenen Beeinflussungen
         else {
-            //Add new restriction
+            //TODO: Add new restriction
         }
+
+        //Abstand seit letzte Frei input prüfen. TODO: Could be added inside else over this line.
+        if(this.abstandSeitFrei < 550); //TODO: Trigger Zwangsbremsung
+        if(this.abstandSeit1000Frei < 1250 && beeinflussung.art == 500); //TODO: Trigger Zwangsbremsung
+        if(this.abstandSeit1000Frei < 1250 && beeinflussung.art == 1000);//TODO: BS becomes active immediatly 
+    }
+
+    //Bei Überschreiten der Überwachungsgeschwindigkeit true
+    geschwindigkeitPruefen(aktuelleGeschwindigkeit) {
+        let ueberschreiten = this.beeinflussungen.some((_beeinf) => {
+            return aktuelleGeschwindigkeit > _beeinf.geschwindigkeitsbegrenzung && _beeinf.istAktiv();
+        });
+        return ueberschreiten;
+    }
+
+    //Beeinflussungen nach restriktiv Modus aktualisieren
+    updateBeeinflussungenGeschwindigkeitbegrenzungen(restriktiv) {
+        this.beeinflussungen.forEach((_beeinf) => {
+            _beeinf.geschwindigkeitsbegrenzung = magnetVMax(_beeinf.art, restriktiv);
+        });
+
+        //TODO: Hinzufügen/Entfernen besondere restriktiv Überwachung
+    } 
+
+    //Von mögliche Beeinflussungen 'befreien'
+    frei() {
+        if(this.beeinflussungen.some(_beeinf => {return _beeinf.art == 1000 && _beeinf.darfBefreitWerden;})) this.abstandSeit1000Frei = 0;
+        this.beeinflussungen = this.beeinflussungen.filter(_beeinf => {return !_beeinf.darfBefreitWerden});
+        //TODO: Check if can be freed from restriktiv
+        //TODO: Refresh gezeigtebeeinflussung
+        this.abstandSeitFrei = 0;
     }
 
 }
