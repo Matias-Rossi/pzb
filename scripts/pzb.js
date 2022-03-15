@@ -1,5 +1,5 @@
 /*
- * BS = Blue Speed (Limit, as shown in the panel, can be 85, 70 or 55 depending braking power)
+ * BS = Blue Speed (Limit, as shown in the panel, can be 85, 70 or 55 depending on braking power)
  * SL = Speed Limit
 */
 
@@ -60,32 +60,32 @@ class PZBZugArt {
 
     magnetVMax(magnet, phase, restriktiv) {
         //Phase: 0 = Geschwindigkeit A; 1 = Geschwindigkeit B; 2 = Darf befreit werden;3 = Überwachung Ende
-        if(magnet == 1000) {
-            if (restriktiv) return this.restriktivA;
-            else return phase == 0? this.bremskurve1000Hz.geschwindigkeitA : this.bremskurve1000Hz.geschwindigkeitB;
+        if(magnet === 1000) {
+            if (restriktiv) return this.bremskurve1000Hz.restriktivA;
+            else return phase === 0? this.bremskurve1000Hz.geschwindigkeitA : this.bremskurve1000Hz.geschwindigkeitB;
         } else
-        if(magnet == 500) {
+        if(magnet === 500) {
             if (restriktiv) {
-                return phase == 0? this.restriktivA : this.restriktivB;
-            } else return phase == 0? this.bremskurve500Hz.geschwindigkeitA : this.bremskurve500Hz.geschwindigkeitB;
+                return phase === 0? this.bremskurve500Hz.restriktivA : this.bremskurve500Hz.restriktivB;
+            } else return phase === 0? this.bremskurve500Hz.geschwindigkeitA : this.bremskurve500Hz.geschwindigkeitB;
         } else
         return this.vMax;
     }
 
     getAktivierungKriterium(magnet, phase) {
-        if(magnet == 1000) {
+        if(magnet === 1000) {
             switch(phase) {
-                case 0: return ZeitabhaengigeAktivierung(0);
-                case 1: return ZeitabhaengigeAktivierung(23);
-                case 2: return AbstandabhaengigeAktivierung(700);
-                case 3: return AbstandabhaengigeAktivierung(1250);
+                case 0: return new ZeitabhaengigeAktivierung(0);
+                case 1: return new ZeitabhaengigeAktivierung(23);
+                case 2: return new AbstandabhaengigeAktivierung(700);
+                case 3: return new AbstandabhaengigeAktivierung(1250);
             }
         } else {
             switch(phase){
-                case 0: return ZeitabhaengigeAktivierung(0);
-                case 1: return AbstandabhaengigeAktivierung(153);
+                case 0: return new ZeitabhaengigeAktivierung(0);
+                case 1: return new AbstandabhaengigeAktivierung(153);
                 case 2:
-                    case 3: return AbstandabhaengigeAktivierung(250);
+                    case 3: return new AbstandabhaengigeAktivierung(250);
             }
         }
     }
@@ -159,11 +159,11 @@ class Beeinflussung {
     }
 
     folgendeBeeinflussungAktivieren() {
-        const verstricheneZeitAux = this.verstricheneZeit;
-        const gefahreneStreckeAux = this.gefahreneStrecke;
-        this = this.folgendeBeeinflussung;
-        this.verstricheneZeit = verstricheneZeitAux;
-        this.gefahreneStrecke = gefahreneStreckeAux;
+        this.art = this.folgendeBeeinflussung.art;
+        this.geschwindigkeitsbegrenzung = this.folgendeBeeinflussung.geschwindigkeitsbegrenzung;
+        this.aktivierung = this.folgendeBeeinflussung.aktivierung;
+        this.darfBefreitWerden = this.folgendeBeeinflussung.darfBefreitWerden;
+        this.folgendeBeeinflussung = this.folgendeBeeinflussung.folgendeBeeinflussung;
     }
 }
 
@@ -181,7 +181,7 @@ class ZugPZB {
 
     neueBeeinflussungDurchMagnet(magnetHz) {
         let geschwindigkeitsbegrenzung;
-        if(magnetHz == 1000 && this.abstandSeit1000Frei < 1250)
+        if(magnetHz === 1000 && this.abstandSeit1000Frei < 1250)
             geschwindigkeitsbegrenzung = this.zugArt.magnetVMax(magnetHz, 1, this.restriktivModus);
         else 
             geschwindigkeitsbegrenzung = this.zugArt.magnetVMax(magnetHz, 0, this.restriktivModus);
@@ -200,10 +200,10 @@ class ZugPZB {
 
         //Derzeit ist eine 500 Hz Beeinflussung aktiv
         if(this.beeinflussungen.findIndex((_elem) => {
-            return _elem.art == 500;
-        }) != 1) {
+            return _elem.art === 500;
+        }) !== 1) {
 
-            if(beeinflussung.art == 500) {
+            if(beeinflussung.art === 500) {
                 //TODO: Refresh 500 Hz restriction
             } else {
                 //TODO: Add 1000 Hz restriction to background
@@ -211,9 +211,9 @@ class ZugPZB {
         }
         //Derzeit ist eine 1000 Hz Beeinflussung aktiv
         else if(this.beeinflussungen.findIndex((_elem) => {
-            return _elem.art == 500;
-        }) != 1) {
-            if(beeinflussung.art == 500) {
+            return _elem.art === 500;
+        }) !== 1) {
+            if(beeinflussung.art === 500) {
                 //TODO: Add 500 Hz on top of 1000 Hz
             } else {
                 //TODO: Refresh 1000 Hz restriction
@@ -226,8 +226,8 @@ class ZugPZB {
 
         //Abstand seit letzte Frei input prüfen. TODO: Could be added inside else over this line.
         if(this.abstandSeitFrei < 550); //TODO: Trigger Zwangsbremsung
-        if(this.abstandSeit1000Frei < 1250 && beeinflussung.art == 500); //TODO: Trigger Zwangsbremsung
-        if(this.abstandSeit1000Frei < 1250 && beeinflussung.art == 1000);//TODO: BS becomes active immediatly 
+        if(this.abstandSeit1000Frei < 1250 && beeinflussung.art === 500); //TODO: Trigger Zwangsbremsung
+        if(this.abstandSeit1000Frei < 1250 && beeinflussung.art === 1000);//TODO: BS becomes active immediatly
     }
 
     //Bei Überschreiten der Überwachungsgeschwindigkeit true
@@ -241,7 +241,7 @@ class ZugPZB {
     //Beeinflussungen nach restriktiv Modus aktualisieren
     updateBeeinflussungenGeschwindigkeitbegrenzungen(restriktiv) {
         this.beeinflussungen.forEach((_beeinf) => {
-            _beeinf.geschwindigkeitsbegrenzung = magnetVMax(_beeinf.art, restriktiv);
+            _beeinf.geschwindigkeitsbegrenzung = this.zugArt.magnetVMax(_beeinf.art, restriktiv);
         });
 
         //TODO: Hinzufügen/Entfernen besondere restriktiv Überwachung
@@ -249,7 +249,7 @@ class ZugPZB {
 
     //Von mögliche Beeinflussungen 'befreien'
     frei() {
-        if(this.beeinflussungen.some(_beeinf => {return _beeinf.art == 1000 && _beeinf.darfBefreitWerden;})) this.abstandSeit1000Frei = 0;
+        if(this.beeinflussungen.some(_beeinf => {return _beeinf.art === 1000 && _beeinf.darfBefreitWerden;})) this.abstandSeit1000Frei = 0;
         this.beeinflussungen = this.beeinflussungen.filter(_beeinf => {return !_beeinf.darfBefreitWerden});
         //TODO: Check if can be freed from restriktiv
         //TODO: Refresh gezeigtebeeinflussung
