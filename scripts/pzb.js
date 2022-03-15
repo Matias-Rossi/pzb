@@ -193,35 +193,61 @@ class ZugPZB {
         let phase0 = new Beeinflussung(magnetHz, geschwindigkeitsbegrenzung, aktivierung, false, phase1);
         
         this.beeinflussungHinzufuegen(phase0);
+        //TODO: Leuchtmelder und Inputs handlen
     }
 
     beeinflussungHinzufuegen(beeinflussung) {
         let aktiveBeeinflussungArt = beeinflussung.art;
 
-        //Derzeit ist eine 500 Hz Beeinflussung aktiv
-        if(this.beeinflussungen.findIndex((_elem) => {
-            return _elem.art === 500;
-        }) !== 1) {
+        let _500HzBeeinflussungIndex = this.beeinflussungen.findIndex((_elem) => {return _elem.art === 500;});
+        let _1000HzBeeinflussungIndex = this.beeinflussungen.findIndex((_elem) => {return _elem.art === 1000;});
 
+        //Derzeit ist eine 500 Hz Beeinflussung aktiv
+        if(_500HzBeeinflussungIndex !== 1) {
+
+            //Neue 500Hz Beeinflussung
             if(beeinflussung.art === 500) {
-                //TODO: Refresh 500 Hz restriction
-            } else {
+                //500 Hz Überwachung aktualisieren
+                let _ind = _500HzBeeinflussungIndex;
+                this.beeinflussungen[_ind].verstricheneZeit = 0;
+                this.beeinflussungen[_ind].gefahreneStrecke = 0;
+                //TODO: Restriktiv Modus handeln
+                return;
+            }
+
+            //Neue 1000Hz Beeinflussung 
+            else {
                 //TODO: Add 1000 Hz restriction to background
+                let _1000HzBeeinflussungIndex = this.beeinflussungen.findIndex(_beeinf => _beeinf.art);
+                if(_1000HzBeeinflussungIndex !== -1) {
+                    this.beeinflussungen[_1000HzBeeinflussungIndex].verstricheneZeit = 0;
+                    this.beeinflussungen[_1000HzBeeinflussungIndex].gefahreneStrecke = 0;
+                    return;
+                } else {
+                    this.beeinflussungen.push(beeinflussung);
+                    return;
+                }
+                //TODO: Restriktiv Modus handeln
             }
         }
+
         //Derzeit ist eine 1000 Hz Beeinflussung aktiv
-        else if(this.beeinflussungen.findIndex((_elem) => {
-            return _elem.art === 500;
-        }) !== 1) {
+        else if(_1000HzBeeinflussungIndex !== 1) {
             if(beeinflussung.art === 500) {
                 //TODO: Add 500 Hz on top of 1000 Hz
+                let _1000HzBeeinflussungIndex = this.beeinflussungen.findIndex(_beeinf => _beeinf.art);
+                this.beeinflussungen[_ind + 1] = this.beeinflussungen[_ind];
+                this.beeinflussungen[_ind] = beeinflussung;
             } else {
                 //TODO: Refresh 1000 Hz restriction
+                this.beeinflussungen[_1000HzBeeinflussungIndex].verstricheneZeit = 0;
+                this.beeinflussungen[_1000HzBeeinflussungIndex].gefahreneStrecke = 0;
             }
         }
         // Keine vorhandenen Beeinflussungen
         else {
             //TODO: Add new restriction
+            this.beeinflussungen.push(beeinflussung);
         }
 
         //Abstand seit letzte Frei input prüfen. TODO: Could be added inside else over this line.
