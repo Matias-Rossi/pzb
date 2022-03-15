@@ -258,10 +258,11 @@ class ZugPZB {
 
     //Bei Überschreiten der Überwachungsgeschwindigkeit true
     geschwindigkeitPruefen(aktuelleGeschwindigkeit) {
-        let ueberschreiten = this.beeinflussungen.some((_beeinf) => {
+        let beeinflussungUeberschreiten = this.beeinflussungen.some((_beeinf) => {
             return aktuelleGeschwindigkeit > _beeinf.geschwindigkeitsbegrenzung && _beeinf.istAktiv();
         });
-        return ueberschreiten;
+        let vMaxUeberschreiten = this.restriktivModus? 45 < aktuelleGeschwindigkeit : this.zugArt.vMax < aktuelleGeschwindigkeit;
+        return beeinflussungUeberschreiten || vMaxUeberschreiten;
     }
 
     //Beeinflussungen nach restriktiv Modus aktualisieren
@@ -275,12 +276,52 @@ class ZugPZB {
 
     //Von mögliche Beeinflussungen 'befreien'
     frei() {
+        //Restriktiv Modus ausschalten, wenn möglich
+        if(this.beeinflussungen.length === 0) this.restriktivModusSchalten(false);
+
+        //Von Beeinflusungen befreien
         if(this.beeinflussungen.some(_beeinf => {return _beeinf.art === 1000 && _beeinf.darfBefreitWerden;})) this.abstandSeit1000Frei = 0;
         this.beeinflussungen = this.beeinflussungen.filter(_beeinf => {return !_beeinf.darfBefreitWerden});
-        //TODO: Check if can be freed from restriktiv
+
         //TODO: Refresh gezeigtebeeinflussung
         this.abstandSeitFrei = 0;
     }
+
+    //Restriktiv Modus an oder aus (wenn möglich) schalten
+    restriktivModusSchalten(anschalten) {
+        //Restriktiv Modus anschalten
+        if(anschalten && !this.restriktivModus) {
+            this.updateBeeinflussungenGeschwindigkeitbegrenzungen(true);
+            this.restriktivModus = true;
+        } 
+        //Ausschalten
+        else if(!anschalten && this.restriktivModus) {
+            this.updateBeeinflussungenGeschwindigkeitbegrenzungen(false);
+            this.restriktivModus = false;
+        }
+    }
+
+    zwangsbremsungEingeleiten() {
+        this.istZwangbremsungAktiv = true;
+        //TODO: Activate train brake in trainControls.js
+    }
+
+    /*** run PZB ***/
+
+    runPZB() {
+        let pzbHauptschalter = document.getElementById('pzbHauptschalter').checked;
+        while(pzbHauptschalter) {
+            setInterval(()=>{
+                this.runPZBChecks();
+            }, 500);
+        }
+    }
+
+    runPZBChecks() {
+        if(this.geschwindigkeitPruefen(document.getElementById('speedSlider').value)) this.zwangsbremsungEingeleiten();
+    }
+
+
 
 }
 
