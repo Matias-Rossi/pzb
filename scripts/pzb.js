@@ -96,48 +96,6 @@ const zugArtO = new PZBZugArt(165, new Bremskurve(165, 85, 23, null, 45, 45), ne
 const zugArtM = new PZBZugArt(125, new Bremskurve(125, 70, 29, null, 45, 45), new Bremskurve(50, 35, null, 153, 25, 25));
 const zugArtU = new PZBZugArt(105, new Bremskurve(105, 55, 38, null, 45, 45), new Bremskurve(40, 25, null, 153, 25, 25));
 
-/*
-class PZBZugArt {
-    constructor(vMax, v1000Hz, zeit1000Hz, v500HzA, v500HzB,v500HzRestriktivIstKonstant) {
-        this.vMax = vMax;
-        this.v1000Hz = v1000Hz;
-        this.zeit1000Hz = zeit1000Hz;
-        this.v500HzA = v500HzA;
-        this.v500HzB = v500HzB;
-        this.v500HzRestriktivIstKonstant = v500HzRestriktivIstKonstant;
-    }
-
-    magnetVMax(magnet, phase, restriktiv) {
-        //Phase: 0 = bremskurve, 1 = ständig Überwachung
-        switch(magnet) {
-            case 1000: 
-                if (restriktiv) return 45;
-                if(phase == 0) {
-                    return restriktiv? 45 : 165;
-                }
-                else
-                return phase == 0? 165 : 85;
-            case 500:
-                if(restriktiv){ 
-                    if(this.v500HzRestriktivIstKonstant)
-                        return 25;
-                    else 
-                        return 45;
-                } else {
-                    return this.v500HzA;
-                }
-            default: return 0;
-        }
-    }
-
-}
-
-const zugArtO = new PZBZugArt(160, 85, 23, 65, 45, false);
-const zugArtM = new PZBZugArt(120, 70, 29, 50, 35, true);
-const zugArtU = new PZBZugArt(105, 55, 38, 40, 25, true);
-
-*/
-
 
 /* Aux Klassen */
 
@@ -209,55 +167,6 @@ class Beeinflussung {
     }
 }
 
-/*
-class Beeinflussung2 {   //Abstract
-    constructor(art, geschwindigkeitsbegrenzung, zeitBisAktiv, darfBefreitWerden) {
-        this.art = art;
-        this.geschwindigkeitsbegrenzung = geschwindigkeitsbegrenzung;
-        this.zeitBisAktiv = zeitBisAktiv;
-        this.darfBefreitWerden = darfBefreitWerden;
-        this.verstricheneZeit = 0;
-        this.gefahreneStrecke = 0;
-    }
-
-    istAktiv() {
-        return this.verstricheneZeit > this.zeitBisAktiv && !this.istAbgelaufen();
-    }
-}
-
-class DirektBeeinflussung extends Beeinflussung {
-    constructor(art, geschwindigkeitsbegrenzung, zeitBisAktiv, darfBefreitWerden, folgendeAktivierung, folgendeBeeinflusung) {
-        this.folgendeAktivierung = folgendeAktivierung;
-        this.folgendeBeeinflusung = folgendeBeeinflusung;
-        super(art, geschwindigkeitsbegrenzung, zeitBisAktiv, darfBefreitWerden);
-    }
-
-    istAbgelaufen() {
-        if(this.folgendeAktivierung.sollteAktiviertWerden(this)) {
-            this.folgendeBeeinflussungAktivieren();
-            return true;
-        } else 
-        return false;
-    }
-
-    folgendeBeeinflussungAktivieren() {
-        this = this.folgendeBeeinflussung;
-    }
-}
-
-class FolgendeBeeinflussung extends Beeinflussung {
-    constructor(art, geschwindigkeitsbegrenzung, darfBefreitWerden, ende) {
-        this.ende = ende;
-        super(art, geschwindigkeitsbegrenzung, 0, darfBefreitWerden);
-    }
-
-    istBeeinflussungAktiv() {
-        return this.ende.istBeeinflussungAktiv(this);
-    }
-
-
-}
-*/
 class ZugPZB {
     constructor(zugArt) {
         this.zugArt = zugArt;
