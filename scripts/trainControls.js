@@ -4,6 +4,7 @@ import {ZugPZB, zugArtM, zugArtO, zugArtU} from './pzb.js';
 export let pzb = new ZugPZB(zugArtO);
 
 let speedSlider = document.getElementById('speedSlider');
+let zwangsbremsungEingeleitet = false;
 
 export function zwangsbremsungEingeleiten() {
     zwangsbremsungLM(true); //TODO: Mit ZugPZB direkt verbinden
@@ -17,6 +18,7 @@ export function zwangsbremsungEingeleiten() {
             clearInterval(interval);
             console.log("Zwangsbremsung ende");
             zwangsbremsungLM(false); //TODO: Mit ZugPZB direkt verbinden
+            zwangsbremsungEingeleitet = false;
         };
     },200);
 }
@@ -26,10 +28,10 @@ export function zwangsbremsungEingeleiten() {
 
 //PZB ausführen
 document.getElementById('pzbHauptschalter').addEventListener('click', ()=>{
-    let zwangsbremsungEingeleitet = false;
 
     if(document.getElementById('pzbHauptschalter').checked){
 
+        pzb.restriktivModus = true;
         pzb.updateGezeigteBeeinflussung();
 
         let interval = setInterval(() => {
@@ -56,7 +58,7 @@ document.getElementById('pzbHauptschalter').addEventListener('click', ()=>{
 
 //PZB Frei
 document.getElementById('freiButton').addEventListener('click', () => {
-    console.log(pzb);
+    //console.log(pzb);
     pzb.frei(speedSlider.value);
-    console.log(pzb);
+    //console.log(pzb);
 });

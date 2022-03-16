@@ -181,7 +181,7 @@ export class ZugPZB {
         this.leuchtmelder = 'restriktiv';
         this.abstandSeitFrei = 0;
         this.abstandSeit1000Frei = 0;
-        this.blaueLM = zugArt.bremskurve1000Hz.geschwindigkeitA;
+        this.blaueLM = zugArt.bremskurve1000Hz.geschwindigkeitB;
     }
 
     neueBeeinflussungDurchMagnet(magnetHz) {
@@ -285,6 +285,7 @@ export class ZugPZB {
         //Von Zwangsbremsung befreien
         if(parseInt(aktuelleGeschwindigkeit) === 0 && this.istZwangsbremsungAktiv) {
             this.istZwangsbremsungAktiv = false;
+            this.updateGezeigteBeeinflussung();
             return;
         }
 
@@ -297,6 +298,7 @@ export class ZugPZB {
 
         //TODO: Refresh gezeigtebeeinflussung
         this.abstandSeitFrei = 0;
+        this.updateGezeigteBeeinflussung();
 
     }
 
@@ -321,17 +323,18 @@ export class ZugPZB {
     }
 
     updateGezeigteBeeinflussung() {
-        //TODO: It might be possible that blinkers have to be passed as arguments
         alleLMAusschalten();
 
         //Restriktiv Modus
+        console.log("Restriktiv? " + this.restriktivModus);
         if(this.restriktivModus) restriktiv();
 
         //Zwangsbremsung
-        if(this.istZwangsbremsungAktiv) zwangsbremsungLM();
+        console.log("ZB? " + this.istZwangsbremsungAktiv);
+        zwangsbremsungLM(this.istZwangsbremsungAktiv);
 
         //Ohne beeinflussungen
-        else if(this.beeinflussungen == 0 && !this.restriktivModus) blauKonstanterLM(this.blaueLM);
+        if(this.beeinflussungen == 0 && !this.restriktivModus) blauKonstanterLM(this.blaueLM);
 
         else if(this.beeinflussungen == 0);
 
