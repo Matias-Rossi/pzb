@@ -1,11 +1,4 @@
-import { restricted } from './pzbLightCombinations.js';
-let blinker1 = false;
-let blinker2 = true;
-const interval = setInterval(function () {
-    blinker1 = !blinker1;
-    blinker2 = !blinker2;
-    restricted(blinker1, blinker2);
-}, 500);
+
 
 function blinkAllLights(lightStatus) {
     lightStatus = !lightStatus;

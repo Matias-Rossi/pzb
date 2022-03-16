@@ -2,44 +2,46 @@
  * BS = Blue Speed (Limit, as shown in the panel, can be 85, 70 or 55 depending on braking power)
  * SL = Speed Limit
 */
-
 /*
- * The Punktförmige Zugbeeinflusung representation modelled here takes into account the following states:
- *  - Normal
- * 
- *  - Restricted    -> Max. 45 km/h
- * 
- *  - Restricted 1000Hz
- * 
- *  - 1000Hz        -> BS enforced for 1250m, 1000 Hz light on for 700 meters (Can be canceled cia 'PZB Frei'). Speed limit light will flash.
- *        If found while another restriction is in place:
- *          * 1000Hz: the SL will be active for another 1250m
- *          * Restrictive 1000Hz: the new SL will be enforced after the previous restritive mode expires
- *        After confirming via 'PZB Wachsam', the 1000 Hz will be off for 0.5 seconds
- * 
- *  - Recently cleared 
- *          * Train will be forced to stop if a 1000 Hz or 500 Hz is triggered in the 550 meters following a 'PZB Frei' input
- *          * Once cleared from 1000 Hz supervision, if another 1000 Hz magnet is found in the following 1250m, the BS will be enforced immediatly
- *          * Once cleared from a 1000 Hz, if a 500 Hz magnet is found in the following 1250m, a forced stop will be activated
- * 
- *  - 500Hz         -> Speed limit reduced in 153 meters in 2 steps. Enforced for 250 meters and it is not possible to cancel.
- * 
- *  - Restricted 500Hz
- *          * If restricted mode was activated 0-100m after the 500Hz magnet, the restrictive mode will be engaged for 200m
- *          * If restricted mode was activated 100-250m after the 500Hz magnet, the mode will be engaged for 250m
- *          * If already in 1000Hz restrictive monitoring, 500Hz will be triggered alongside a new 200m restrictive mode
- *   
- *  - 2000Hz        -> Forced complete stop "Zwangsbremsung"
- *  - 2000Hz B40    -> When 2000Hz Magnet crossed with 'Befehl 40' active, a 40km/h speed limit is enforced. Prior restrictions will not be canceled. 
- *                          *B40 light will be lit from 2000Hz magnet until the button is no longer being pressed.
- * 
- * 'Restricted' state will be triggered whenever the train is in 1000Hz or 500Hz state and the speed has not exceeded 10 km/h for at least 15 seconds.
- * An eventual 1000 Hz supervision might reappear after a 500 Hz supervision expires. The 1000 Hz will end at 1250 meters from the magnet that triggered it.
- * Active supervisions are not replaced by new supervisions, they continue to operate in the background.
- * The train can be forced to stop in any state.
- * 
- * Train driver has 2.5 seconds to press 'PZB Wachsam' when going over a magnet.
+* The Punktförmige Zugbeeinflusung representation modelled here takes into account the following states:
+*  - Normal
+* 
+*  - Restricted    -> Max. 45 km/h
+* 
+*  - Restricted 1000Hz
+* 
+*  - 1000Hz        -> BS enforced for 1250m, 1000 Hz light on for 700 meters (Can be canceled cia 'PZB Frei'). Speed limit light will flash.
+*        If found while another restriction is in place:
+*          * 1000Hz: the SL will be active for another 1250m
+*          * Restrictive 1000Hz: the new SL will be enforced after the previous restritive mode expires
+*        After confirming via 'PZB Wachsam', the 1000 Hz will be off for 0.5 seconds
+* 
+*  - Recently cleared 
+*          * Train will be forced to stop if a 1000 Hz or 500 Hz is triggered in the 550 meters following a 'PZB Frei' input
+*          * Once cleared from 1000 Hz supervision, if another 1000 Hz magnet is found in the following 1250m, the BS will be enforced immediatly
+*          * Once cleared from a 1000 Hz, if a 500 Hz magnet is found in the following 1250m, a forced stop will be activated
+* 
+*  - 500Hz         -> Speed limit reduced in 153 meters in 2 steps. Enforced for 250 meters and it is not possible to cancel.
+* 
+*  - Restricted 500Hz
+*          * If restricted mode was activated 0-100m after the 500Hz magnet, the restrictive mode will be engaged for 200m
+*          * If restricted mode was activated 100-250m after the 500Hz magnet, the mode will be engaged for 250m
+*          * If already in 1000Hz restrictive monitoring, 500Hz will be triggered alongside a new 200m restrictive mode
+*   
+*  - 2000Hz        -> Forced complete stop "Zwangsbremsung"
+*  - 2000Hz B40    -> When 2000Hz Magnet crossed with 'Befehl 40' active, a 40km/h speed limit is enforced. Prior restrictions will not be canceled. 
+*                          *B40 light will be lit from 2000Hz magnet until the button is no longer being pressed.
+* 
+* 'Restricted' state will be triggered whenever the train is in 1000Hz or 500Hz state and the speed has not exceeded 10 km/h for at least 15 seconds.
+* An eventual 1000 Hz supervision might reappear after a 500 Hz supervision expires. The 1000 Hz will end at 1250 meters from the magnet that triggered it.
+* Active supervisions are not replaced by new supervisions, they continue to operate in the background.
+* The train can be forced to stop in any state.
+* 
+* Train driver has 2.5 seconds to press 'PZB Wachsam' when going over a magnet.
 */
+import { blauKonstanterLM, restriktiv, zwangsbremsungLM, _1000HzLM, _500HzLM, alleLMAusschalten } from "./pzbLightCombinations.js";
+//import { blinker1, blinker2 } from './lightController.js'
+
 
 class Bremskurve {
     constructor(geschwindigkeitA, geschwindigkeitB, zeit, abstand, restriktivA, restriktivB) {
@@ -92,9 +94,9 @@ class PZBZugArt {
 
 }
 
-const zugArtO = new PZBZugArt(165, new Bremskurve(165, 85, 23, null, 45, 45), new Bremskurve(65, 45, null, 153, 45, 25));
-const zugArtM = new PZBZugArt(125, new Bremskurve(125, 70, 29, null, 45, 45), new Bremskurve(50, 35, null, 153, 25, 25));
-const zugArtU = new PZBZugArt(105, new Bremskurve(105, 55, 38, null, 45, 45), new Bremskurve(40, 25, null, 153, 25, 25));
+export const zugArtO = new PZBZugArt(165, new Bremskurve(165, 85, 23, null, 45, 45), new Bremskurve(65, 45, null, 153, 45, 25));
+export const zugArtM = new PZBZugArt(125, new Bremskurve(125, 70, 29, null, 45, 45), new Bremskurve(50, 35, null, 153, 25, 25));
+export const zugArtU = new PZBZugArt(105, new Bremskurve(105, 55, 38, null, 45, 45), new Bremskurve(40, 25, null, 153, 25, 25));
 
 
 /* Aux Klassen */
@@ -144,6 +146,7 @@ class Beeinflussung {
         //Beeinflussung-Zug Angaben
         this.verstricheneZeit = 0;
         this.gefahreneStrecke = 0;
+        this.phase = 0;
     }
 
     istBegonnen() {
@@ -164,19 +167,21 @@ class Beeinflussung {
         this.aktivierung = this.folgendeBeeinflussung.aktivierung;
         this.darfBefreitWerden = this.folgendeBeeinflussung.darfBefreitWerden;
         this.folgendeBeeinflussung = this.folgendeBeeinflussung.folgendeBeeinflussung;
+        this.phase++;
     }
 }
 
-class ZugPZB {
+export class ZugPZB {
     constructor(zugArt) {
         this.zugArt = zugArt;
         this.gezeigteBeeinflussung = null;
         this.beeinflussungen = [];              //Sorted from more to less restrictive
         this.restriktivModus = true;
-        this.istZwangbremsungAktiv = false;
+        this.istZwangsbremsungAktiv = false;
         this.leuchtmelder = 'restriktiv';
         this.abstandSeitFrei = 0;
         this.abstandSeit1000Frei = 0;
+        this.blaueLM = zugArt.bremskurve1000Hz.geschwindigkeitA;
     }
 
     neueBeeinflussungDurchMagnet(magnetHz) {
@@ -256,13 +261,13 @@ class ZugPZB {
         if(this.abstandSeit1000Frei < 1250 && beeinflussung.art === 1000);//TODO: BS becomes active immediatly
     }
 
-    //Bei Überschreiten der Überwachungsgeschwindigkeit true
+    //Bei Überschreiten der Überwachungsgeschwindigkeit Zwangsbremsung eingeleiten
     geschwindigkeitPruefen(aktuelleGeschwindigkeit) {
         let beeinflussungUeberschreiten = this.beeinflussungen.some((_beeinf) => {
             return aktuelleGeschwindigkeit > _beeinf.geschwindigkeitsbegrenzung && _beeinf.istAktiv();
         });
         let vMaxUeberschreiten = this.restriktivModus? 45 < aktuelleGeschwindigkeit : this.zugArt.vMax < aktuelleGeschwindigkeit;
-        return beeinflussungUeberschreiten || vMaxUeberschreiten;
+        if(beeinflussungUeberschreiten || vMaxUeberschreiten) this.zwangsbremsungEingeleiten();
     }
 
     //Beeinflussungen nach restriktiv Modus aktualisieren
@@ -275,7 +280,14 @@ class ZugPZB {
     } 
 
     //Von mögliche Beeinflussungen 'befreien'
-    frei() {
+    frei(aktuelleGeschwindigkeit) {
+        
+        //Von Zwangsbremsung befreien
+        if(parseInt(aktuelleGeschwindigkeit) === 0 && this.istZwangsbremsungAktiv) {
+            this.istZwangsbremsungAktiv = false;
+            return;
+        }
+
         //Restriktiv Modus ausschalten, wenn möglich
         if(this.beeinflussungen.length === 0) this.restriktivModusSchalten(false);
 
@@ -285,6 +297,7 @@ class ZugPZB {
 
         //TODO: Refresh gezeigtebeeinflussung
         this.abstandSeitFrei = 0;
+
     }
 
     //Restriktiv Modus an oder aus (wenn möglich) schalten
@@ -302,26 +315,49 @@ class ZugPZB {
     }
 
     zwangsbremsungEingeleiten() {
-        this.istZwangbremsungAktiv = true;
+        this.istZwangsbremsungAktiv = true;
+        console.error("PZB is triggering Zwangsbremsung")
         //TODO: Activate train brake in trainControls.js
+    }
+
+    updateGezeigteBeeinflussung() {
+        //TODO: It might be possible that blinkers have to be passed as arguments
+        alleLMAusschalten();
+
+        //Restriktiv Modus
+        if(this.restriktivModus) restriktiv();
+
+        //Zwangsbremsung
+        if(this.istZwangsbremsungAktiv) zwangsbremsungLM();
+
+        //Ohne beeinflussungen
+        else if(this.beeinflussungen == 0 && !this.restriktivModus) blauKonstanterLM(this.blaueLM);
+
+        else if(this.beeinflussungen == 0);
+
+        //1000Hz beeinflussung
+        else if(this.beeinflussungen[0].art == 1000)  _1000HzLM(this.beeinflussungen[0].phase, this.blaueLM);
+        
+        //500Hz beeinflussung
+        else if(this.beeinflussungen[0].art == 500)  _500HzLM(this.beeinflussungen[0].phase, this.blaueLM);
     }
 
     /*** run PZB ***/
 
+    //Derzeit nicht benutzt
     runPZB() {
-        let pzbHauptschalter = document.getElementById('pzbHauptschalter').checked;
-        while(pzbHauptschalter) {
-            setInterval(()=>{
-                this.runPZBChecks();
-            }, 500);
-        }
+        //let pzbHauptschalter = document.getElementById('pzbHauptschalter').checked;
+
+        let interval = setInterval(()=>{
+            this.runPZBChecks();
+            console.log("PZB Check running");
+            if(!document.getElementById('pzbHauptschalter').checked) clearInterval(interval);
+        }, 500);
+        
     }
 
     runPZBChecks() {
-        if(this.geschwindigkeitPruefen(document.getElementById('speedSlider').value)) this.zwangsbremsungEingeleiten();
+        this.geschwindigkeitPruefen(document.getElementById('speedSlider').value);
+        //return this.istZwangsbremsungAktiv;
     }
-
-
-
 }
-

@@ -31,8 +31,9 @@
             <div id="controls">
                 <div class="pzbControls">
                     <img src="img/pzb/befehl.png" alt="Befehl Button" class="pzbControl" id="befehlButton">
-                    <img src="img/pzb/freiInactive.png" alt="Frei Button" class="pzbControl">
+                    <img src="img/pzb/freiInactive.png" alt="Frei Button" class="pzbControl" id="freiButton">
                     <img src="img/pzb/wachsamInactive.png" alt="Wachsam Button" class="pzbControl">
+                    <input type="checkbox" name="pzbHauptschalter" id="pzbHauptschalter"><label for="pzbHauptschalter">PZB Hauptschalter</label>
                 </div>
             </div>
         </div>
@@ -49,8 +50,9 @@
             </div>
         </div>
     </main>
-    <script src="scripts/trainControls.js"></script>
+    <script src="scripts/pzb.js" type="module"></script>
+    <script src="scripts/trainControls.js" type="module"></script>
     <script src="scripts/pzbLightCombinations.js" type="module"></script>
-    <script src="scripts/lightController.js""></script>
+    <script src="scripts/lightController.js" type="module"></script>
 </body>
 </html>
