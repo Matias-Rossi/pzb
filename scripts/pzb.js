@@ -182,6 +182,7 @@ export class ZugPZB {
         this.abstandSeitFrei = 0;
         this.abstandSeit1000Frei = 0;
         this.blaueLM = zugArt.bremskurve1000Hz.geschwindigkeitB;
+        this.zeitUnter10kmh = 0;
     }
 
     neueBeeinflussungDurchMagnet(magnetHz) {
@@ -343,22 +344,22 @@ export class ZugPZB {
         else if(this.beeinflussungen[0].art == 500)  _500HzLM(this.beeinflussungen[0].phase, this.blaueLM);
     }
 
-    /*** run PZB ***/
-
-    //Derzeit nicht benutzt
-    runPZB() {
-        //let pzbHauptschalter = document.getElementById('pzbHauptschalter').checked;
-
-        let interval = setInterval(()=>{
-            this.runPZBChecks();
-            console.log("PZB Check running");
-            if(!document.getElementById('pzbHauptschalter').checked) clearInterval(interval);
-        }, 500);
-        
+    schleichfahrtPruefen(aktuelleGeschwindigkeit) {
+        if(aktuelleGeschwindigkeit > 10) {
+            this.zeitUnter10kmh = 0;
+        } else {
+            this.zeitUnter10kmh++;
+            if(this.zeitUnter10kmh > 15 && this.beeinflussungen.length > 0) {
+                this.restriktiverModusSchalten(true);
+            }
+        }
     }
 
-    runPZBChecks() {
-        this.geschwindigkeitPruefen(document.getElementById('speedSlider').value);
+    /*** run PZB ***/
+
+    runPZB(aktuelleGeschwindigkeit) {
+        this.geschwindigkeitPruefen(aktuelleGeschwindigkeit);
+
         //return this.istZwangsbremsungAktiv;
     }
 }

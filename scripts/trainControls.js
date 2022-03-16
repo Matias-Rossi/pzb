@@ -33,11 +33,16 @@ document.getElementById('pzbHauptschalter').addEventListener('click', ()=>{
 
         pzb.restriktiverModus = true;
         pzb.updateGezeigteBeeinflussung();
+        let count = 0;
 
         let interval = setInterval(() => {
+            let geschwindigkeit = speedSlider.value;
+
+            if(count % 4 == 0? true:false) pzb.schleichfahrtPruefen(geschwindigkeit);
+            count++;
 
             //PZB Überwachung ausführen
-            pzb.runPZBChecks();
+            pzb.runPZB(geschwindigkeit);
 
             //Zwangsbremsung eingeleitet?
             if(pzb.istZwangsbremsungAktiv && !zwangsbremsungEingeleitet) {
