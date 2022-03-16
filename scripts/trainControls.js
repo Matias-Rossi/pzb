@@ -31,7 +31,7 @@ document.getElementById('pzbHauptschalter').addEventListener('click', ()=>{
 
     if(document.getElementById('pzbHauptschalter').checked){
 
-        pzb.restriktivModus = true;
+        pzb.restriktiverModus = true;
         pzb.updateGezeigteBeeinflussung();
 
         let interval = setInterval(() => {

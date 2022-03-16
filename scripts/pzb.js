@@ -176,7 +176,7 @@ export class ZugPZB {
         this.zugArt = zugArt;
         this.gezeigteBeeinflussung = null;
         this.beeinflussungen = [];              //Sorted from more to less restrictive
-        this.restriktivModus = true;
+        this.restriktiverModus = true;
         this.istZwangsbremsungAktiv = false;
         this.leuchtmelder = 'restriktiv';
         this.abstandSeitFrei = 0;
@@ -187,9 +187,9 @@ export class ZugPZB {
     neueBeeinflussungDurchMagnet(magnetHz) {
         let geschwindigkeitsbegrenzung;
         if(magnetHz === 1000 && this.abstandSeit1000Frei < 1250)
-            geschwindigkeitsbegrenzung = this.zugArt.magnetVMax(magnetHz, 1, this.restriktivModus);
+            geschwindigkeitsbegrenzung = this.zugArt.magnetVMax(magnetHz, 1, this.restriktiverModus);
         else 
-            geschwindigkeitsbegrenzung = this.zugArt.magnetVMax(magnetHz, 0, this.restriktivModus);
+            geschwindigkeitsbegrenzung = this.zugArt.magnetVMax(magnetHz, 0, this.restriktiverModus);
         let aktivierung = this.zugArt.getAktivierungKriterium(magnetHz, 0);
 
         let phase3 = new Beeinflussung(magnetHz, this.zugArt.magnetVMax(magnetHz, 3), this.zugArt.getAktivierungKriterium(magnetHz, 3), null);
@@ -266,53 +266,53 @@ export class ZugPZB {
         let beeinflussungUeberschreiten = this.beeinflussungen.some((_beeinf) => {
             return aktuelleGeschwindigkeit > _beeinf.geschwindigkeitsbegrenzung && _beeinf.istAktiv();
         });
-        let vMaxUeberschreiten = this.restriktivModus? 45 < aktuelleGeschwindigkeit : this.zugArt.vMax < aktuelleGeschwindigkeit;
+        let vMaxUeberschreiten = this.restriktiverModus? 45 < aktuelleGeschwindigkeit : this.zugArt.vMax < aktuelleGeschwindigkeit;
         if(beeinflussungUeberschreiten || vMaxUeberschreiten) this.zwangsbremsungEingeleiten();
     }
 
-    //Beeinflussungen nach restriktiv Modus aktualisieren
+    //Beeinflussungen nach restriktiver Modus aktualisieren
     updateBeeinflussungenGeschwindigkeitbegrenzungen(restriktiv) {
         this.beeinflussungen.forEach((_beeinf) => {
             _beeinf.geschwindigkeitsbegrenzung = this.zugArt.magnetVMax(_beeinf.art, restriktiv);
         });
 
-        //TODO: Hinzufügen/Entfernen besondere restriktiv Überwachung
+        //TODO: besondere restriktive Überwachung hinzufügen/entfernen
     } 
 
-    //Von mögliche Beeinflussungen 'befreien'
+    //Von möglichen Beeinflussungen 'befreien'
     frei(aktuelleGeschwindigkeit) {
         
-        //Von Zwangsbremsung befreien
+        //Von der Zwangsbremsung befreien
         if(parseInt(aktuelleGeschwindigkeit) === 0 && this.istZwangsbremsungAktiv) {
             this.istZwangsbremsungAktiv = false;
             this.updateGezeigteBeeinflussung();
             return;
         }
 
-        //Restriktiv Modus ausschalten, wenn möglich
-        if(this.beeinflussungen.length === 0) this.restriktivModusSchalten(false);
+        //Restriktiver Modus ausschalten, wenn möglich
+        if(this.beeinflussungen.length === 0) this.restriktiverModusSchalten(false);
 
         //Von Beeinflusungen befreien
         if(this.beeinflussungen.some(_beeinf => {return _beeinf.art === 1000 && _beeinf.darfBefreitWerden;})) this.abstandSeit1000Frei = 0;
         this.beeinflussungen = this.beeinflussungen.filter(_beeinf => {return !_beeinf.darfBefreitWerden});
 
-        //TODO: Refresh gezeigtebeeinflussung
+        //TODO: Refresh gezeigte Beeinflussung
         this.abstandSeitFrei = 0;
         this.updateGezeigteBeeinflussung();
 
     }
 
     //Restriktiv Modus an oder aus (wenn möglich) schalten
-    restriktivModusSchalten(anschalten) {
+    restriktiverModusSchalten(anschalten) {
         //Restriktiv Modus anschalten
-        if(anschalten && !this.restriktivModus) {
+        if(anschalten && !this.restriktiverModus) {
             this.updateBeeinflussungenGeschwindigkeitbegrenzungen(true);
-            this.restriktivModus = true;
+            this.restriktiverModus = true;
         } 
         //Ausschalten
-        else if(!anschalten && this.restriktivModus) {
+        else if(!anschalten && this.restriktiverModus) {
             this.updateBeeinflussungenGeschwindigkeitbegrenzungen(false);
-            this.restriktivModus = false;
+            this.restriktiverModus = false;
         }
     }
 
@@ -325,16 +325,14 @@ export class ZugPZB {
     updateGezeigteBeeinflussung() {
         alleLMAusschalten();
 
-        //Restriktiv Modus
-        console.log("Restriktiv? " + this.restriktivModus);
-        if(this.restriktivModus) restriktiv();
+        //Restriktiver Modus
+        if(this.restriktiverModus) restriktiv();
 
         //Zwangsbremsung
-        console.log("ZB? " + this.istZwangsbremsungAktiv);
         zwangsbremsungLM(this.istZwangsbremsungAktiv);
 
         //Ohne beeinflussungen
-        if(this.beeinflussungen == 0 && !this.restriktivModus) blauKonstanterLM(this.blaueLM);
+        if(this.beeinflussungen == 0 && !this.restriktiverModus) blauKonstanterLM(this.blaueLM);
 
         else if(this.beeinflussungen == 0);
 
