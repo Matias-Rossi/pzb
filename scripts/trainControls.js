@@ -38,7 +38,11 @@ document.getElementById('pzbHauptschalter').addEventListener('click', ()=>{
         let interval = setInterval(() => {
             let geschwindigkeit = speedSlider.value;
 
-            if(count % 4 == 0? true:false) pzb.schleichfahrtPruefen(geschwindigkeit);
+            //"Einmal pro Sekunde" Prüfungen
+            if(count % 4 == 0? true:false) {
+                pzb.schleichfahrtPruefen(geschwindigkeit);
+                pzb.vMaxPruefen(geschwindigkeit);
+            }
             count++;
 
             //PZB Überwachung ausführen

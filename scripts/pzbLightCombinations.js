@@ -1,4 +1,4 @@
-import {switchLM55, switchLM70, switchLM85, switchLMS, switchLM1000Hz, switchLM500Hz, switchLMBefehl40} from './lightController.js';
+import {switchLM55, switchLM70, switchLM85, switchLMS, switchLMG, switchLM1000Hz, switchLM500Hz, switchLMBefehl40} from './lightController.js';
 
 
 export let blinker1 = false;
@@ -9,7 +9,7 @@ const interval = setInterval(function () {
     blinkerIterator();
 }, 500);
 
-let hauptLM = [switchLM55, switchLM70, switchLM85, switchLMBefehl40, switchLM500Hz, switchLM1000Hz];
+let hauptLM = [switchLM55, switchLM70, switchLM85, switchLMBefehl40, switchLM500Hz, switchLM1000Hz, switchLMG, switchLMS];
 
 function getSwitchNachBlaueGeschwindigkeit(blaueNummer) {
     let fun;
@@ -64,6 +64,10 @@ export function _500HzLM(phase, bs) {
         case 2: switchLM500Hz(true); break;
         case 3: break;
     }
+}
+
+export function geschwindigkeitsueberschreitungLM() {
+    blinken(switchLMG, 1);
 }
 
 //Blinkers

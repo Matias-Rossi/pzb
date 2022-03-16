@@ -39,7 +39,7 @@
 * 
 * Train driver has 2.5 seconds to press 'PZB Wachsam' when going over a magnet.
 */
-import { blauKonstanterLM, restriktiv, zwangsbremsungLM, _1000HzLM, _500HzLM, alleLMAusschalten } from "./pzbLightCombinations.js";
+import { blauKonstanterLM, restriktiv, zwangsbremsungLM, _1000HzLM, _500HzLM, alleLMAusschalten, geschwindigkeitsueberschreitungLM } from "./pzbLightCombinations.js";
 //import { blinker1, blinker2 } from './lightController.js'
 
 
@@ -171,6 +171,8 @@ class Beeinflussung {
     }
 }
 
+/****** Zug PZB *****/
+
 export class ZugPZB {
     constructor(zugArt) {
         this.zugArt = zugArt;
@@ -183,6 +185,8 @@ export class ZugPZB {
         this.abstandSeit1000Frei = 0;
         this.blaueLM = zugArt.bremskurve1000Hz.geschwindigkeitB;
         this.zeitUnter10kmh = 0;
+        this.geschwindigkeitsueberschreitung = 0;   //0 = Keine Überschreitung; 1 = Überschreitung; 2 = ZB durch Überschreitung
+        this.zeitUeberVmax = 0;
     }
 
     neueBeeinflussungDurchMagnet(magnetHz) {
@@ -267,8 +271,8 @@ export class ZugPZB {
         let beeinflussungUeberschreiten = this.beeinflussungen.some((_beeinf) => {
             return aktuelleGeschwindigkeit > _beeinf.geschwindigkeitsbegrenzung && _beeinf.istAktiv();
         });
-        let vMaxUeberschreiten = this.restriktiverModus? 45 < aktuelleGeschwindigkeit : this.zugArt.vMax < aktuelleGeschwindigkeit;
-        if(beeinflussungUeberschreiten || vMaxUeberschreiten) this.zwangsbremsungEingeleiten();
+        let restriktiveVMaxUeberschreiten = this.restriktiverModus? 45 < aktuelleGeschwindigkeit : false;
+        if(beeinflussungUeberschreiten || restriktiveVMaxUeberschreiten) this.zwangsbremsungEingeleiten();
     }
 
     //Beeinflussungen nach restriktiver Modus aktualisieren
@@ -286,12 +290,13 @@ export class ZugPZB {
         //Von der Zwangsbremsung befreien
         if(parseInt(aktuelleGeschwindigkeit) === 0 && this.istZwangsbremsungAktiv) {
             this.istZwangsbremsungAktiv = false;
+            this.geschwindigkeitsueberschreitung = 0;
             this.updateGezeigteBeeinflussung();
             return;
         }
 
         //Restriktiver Modus ausschalten, wenn möglich
-        if(this.beeinflussungen.length === 0) this.restriktiverModusSchalten(false);
+        if(this.beeinflussungen.length === 0 && !this.istZwangsbremsungAktiv) this.restriktiverModusSchalten(false);
 
         //Von Beeinflusungen befreien
         if(this.beeinflussungen.some(_beeinf => {return _beeinf.art === 1000 && _beeinf.darfBefreitWerden;})) this.abstandSeit1000Frei = 0;
@@ -326,6 +331,9 @@ export class ZugPZB {
     updateGezeigteBeeinflussung() {
         alleLMAusschalten();
 
+        //Geschwindigkeitsüberschreitung
+        if(this.geschwindigkeitsueberschreitung > 0) geschwindigkeitsueberschreitungLM();
+
         //Restriktiver Modus
         if(this.restriktiverModus) restriktiv();
 
@@ -353,6 +361,24 @@ export class ZugPZB {
                 this.restriktiverModusSchalten(true);
             }
         }
+    }
+
+    vMaxPruefen(aktuelleGeschwindigkeit) {
+        if(aktuelleGeschwindigkeit >= this.zugArt.vMax && this.geschwindigkeitsueberschreitung === 0) {
+            this.geschwindigkeitsueberschreitung = 1;
+            this.updateGezeigteBeeinflussung();
+        }
+        else if(this.geschwindigkeitsueberschreitung === 1 && aktuelleGeschwindigkeit <= this.zugArt.vMax) {
+            this.geschwindigkeitsueberschreitung = 0;
+            this.updateGezeigteBeeinflussung();
+        }
+        
+        if(aktuelleGeschwindigkeit >= this.zugArt.vMax + 5) {
+            this.geschwindigkeitsueberschreitung = 2;
+            this.zwangsbremsungEingeleiten();
+            this.updateGezeigteBeeinflussung();
+        }
+
     }
 
     /*** run PZB ***/
