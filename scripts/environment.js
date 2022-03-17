@@ -1,7 +1,7 @@
-
+import {gefahreneMeterRechnen} from './utils.js';
 
 let geschwindigkeit;
-let gefahreneMeter = 0;
+export let gefahreneMeter = 0;
 
 function updateGeschwindigkeit() {
     geschwindigkeit = document.getElementById('speedSlider').value;
@@ -9,12 +9,12 @@ function updateGeschwindigkeit() {
 
 function updateGefahreneStrecke() {
     updateGeschwindigkeit();
-    // Geschwindigkeit = Abstand / Zeit    =>    Geschwindigkeit * Zeit = Abstand
-    gefahreneMeter += geschwindigkeit / 12;
+    gefahreneMeter += gefahreneMeterRechnen(geschwindigkeit, 250);
     document.getElementById('traveledMeters').innerHTML = Math.round(gefahreneMeter);
 }
 
-setInterval(() => updateGefahreneStrecke(), 500);
+setInterval(() => updateGefahreneStrecke(), 250);
 
 
 /***** Auxiliar Functions *****/ 
+

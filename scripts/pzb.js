@@ -106,12 +106,8 @@ class AbstandabhaengigeAktivierung {
         this.abstand = abstand;
     }
 
-    sollteAktiviertWerden(beeinflussung) {
-        return beeinflussung.gefahreneStrecke < this.abstand;
-    }
-
     istKriteriumErfuellt(beeinflussung) {
-        return beeinflussung.gefahreneStrecke < this.abstand;
+        return beeinflussung.gefahreneStrecke >= this.abstand;
     }
 }
 
@@ -120,12 +116,8 @@ class ZeitabhaengigeAktivierung {
         this.zeit = zeit;
     }
 
-    sollteAktiviertWerden(beeinflussung) {
-        return beeinflussung.verstricheneZeit < this.zeit;
-    }
-
     istKriteriumErfuellt(beeinflussung) {
-        return beeinflussung.verstricheneZeit < this.zeit;
+        return beeinflussung.verstricheneZeit >= this.zeit;
     }
 }
 
@@ -154,7 +146,7 @@ class Beeinflussung {
     }
 
     istAbgelaufen() {
-        return this.folgendeBeeinflussung? this.folgendeBeeinflussung.aktivierung.istKriteriumErfuellt(this) : true;
+        return this.folgendeBeeinflussung !== null? this.folgendeBeeinflussung.aktivierung.istKriteriumErfuellt(this) : true;
     }
  
     istAktiv() {
@@ -191,18 +183,23 @@ export class ZugPZB {
 
     neueBeeinflussungDurchMagnet(magnetHz) {
         let geschwindigkeitsbegrenzung;
-        if(magnetHz === 1000 && this.abstandSeit1000Frei < 1250)
+        this.abstandSeit1000Frei = 1251;   //TODO: Fix
+        if(magnetHz === 1000 &&  this.abstandSeit1000Frei < 1250)
             geschwindigkeitsbegrenzung = this.zugArt.magnetVMax(magnetHz, 1, this.restriktiverModus);
         else 
             geschwindigkeitsbegrenzung = this.zugArt.magnetVMax(magnetHz, 0, this.restriktiverModus);
         let aktivierung = this.zugArt.getAktivierungKriterium(magnetHz, 0);
 
-        let phase3 = new Beeinflussung(magnetHz, this.zugArt.magnetVMax(magnetHz, 3), this.zugArt.getAktivierungKriterium(magnetHz, 3), null);
-        let phase2 = new Beeinflussung(magnetHz, this.zugArt.magnetVMax(magnetHz, 2), this.zugArt.getAktivierungKriterium(magnetHz, 2), phase3);
-        let phase1 = new Beeinflussung(magnetHz, this.zugArt.magnetVMax(magnetHz, 1), this.zugArt.getAktivierungKriterium(magnetHz, 1), phase2);
+        let phase3 = new Beeinflussung(magnetHz, this.zugArt.magnetVMax(magnetHz, 3), this.zugArt.getAktivierungKriterium(magnetHz, 3), true, null);
+        let phase2 = new Beeinflussung(magnetHz, this.zugArt.magnetVMax(magnetHz, 2), this.zugArt.getAktivierungKriterium(magnetHz, 2), true, phase3);
+        let phase1 = new Beeinflussung(magnetHz, this.zugArt.magnetVMax(magnetHz, 1), this.zugArt.getAktivierungKriterium(magnetHz, 1), false, phase2);
         let phase0 = new Beeinflussung(magnetHz, geschwindigkeitsbegrenzung, aktivierung, false, phase1);
         
         this.beeinflussungHinzufuegen(phase0);
+        //this.gezeigteBeeinflussung = this.beeinflussungen[0];
+        this.updateGezeigteBeeinflussung();
+        console.log('Added Beeinflussung');
+        console.log(phase0);
         //TODO: Leuchtmelder und Inputs handlen
     }
 
@@ -213,7 +210,7 @@ export class ZugPZB {
         let _1000HzBeeinflussungIndex = this.beeinflussungen.findIndex((_elem) => {return _elem.art === 1000;});
 
         //Derzeit ist eine 500 Hz Beeinflussung aktiv
-        if(_500HzBeeinflussungIndex !== 1) {
+        if(_500HzBeeinflussungIndex !== -1) {
 
             //Neue 500Hz Beeinflussung
             if(beeinflussung.art === 500) {
@@ -242,10 +239,10 @@ export class ZugPZB {
         }
 
         //Derzeit ist eine 1000 Hz Beeinflussung aktiv
-        else if(_1000HzBeeinflussungIndex !== 1) {
+        else if(_1000HzBeeinflussungIndex !== -1) {
             if(beeinflussung.art === 500) {
                 //TODO: Add 500 Hz on top of 1000 Hz
-                let _1000HzBeeinflussungIndex = this.beeinflussungen.findIndex(_beeinf => _beeinf.art);
+                let _ind = this.beeinflussungen.findIndex(_beeinf => _beeinf.art);
                 this.beeinflussungen[_ind + 1] = this.beeinflussungen[_ind];
                 this.beeinflussungen[_ind] = beeinflussung;
             } else {
@@ -381,10 +378,46 @@ export class ZugPZB {
 
     }
 
+    beeinflussungenGefahreneStreckeAktualisieren(gefahreneMeter) {
+        this.beeinflussungen.forEach(_beeinf => {
+            _beeinf.gefahreneStrecke += gefahreneMeter;
+        });
+    }
+
+    beeinflussungenVerstricheneZeitAktualisieren() {
+        this.beeinflussungen.forEach(_beeinf => {
+            _beeinf.verstricheneZeit++;
+            //console.log('verstrichene Zeit: ' + _beeinf.verstricheneZeit);
+        });
+    }
+
+    abgelaufeneBeeinflussungenPruefen() {
+        let phase4Index = this.beeinflussungen.findIndex((_beeinf)=>{
+            return _beeinf.phase === 3? true : false;
+        });
+        if(phase4Index !== -1) {
+            this.beeinflussungen.splice(phase4Index, 1);
+            console.log("Abgelaufen Beeinflusung entfernt!");
+        }
+
+        let phaseVeraendert = false;
+        this.beeinflussungen.forEach(_beeinf => {
+            if(_beeinf.istAbgelaufen()) {
+                _beeinf.folgendeBeeinflussungAktivieren();
+                phaseVeraendert = true;
+                console.log("Beeinf. " + _beeinf.art + " changed to phase " + _beeinf.phase);
+            }
+        });
+
+        if(phaseVeraendert) this.updateGezeigteBeeinflussung();
+    }
+
     /*** run PZB ***/
 
-    runPZB(aktuelleGeschwindigkeit) {
+    runPZB(aktuelleGeschwindigkeit, gefahreneMeter) {
         this.geschwindigkeitPruefen(aktuelleGeschwindigkeit);
+        this.beeinflussungenGefahreneStreckeAktualisieren(gefahreneMeter);  //Seit letzten Ausführung
+        this.abgelaufeneBeeinflussungenPruefen();
 
         //return this.istZwangsbremsungAktiv;
     }

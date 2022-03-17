@@ -1,5 +1,7 @@
 import {zwangsbremsungLM, alleLMAusschalten} from './pzbLightCombinations.js';
 import {ZugPZB, zugArtM, zugArtO, zugArtU} from './pzb.js';
+import { gefahreneMeter } from './environment.js';
+import { gefahreneMeterRechnen } from './utils.js';
 
 export let pzb = new ZugPZB(zugArtO);
 
@@ -37,29 +39,31 @@ document.getElementById('pzbHauptschalter').addEventListener('click', ()=>{
 
         let interval = setInterval(() => {
             let geschwindigkeit = speedSlider.value;
+            let letzteGefahreneStreckeAngaben = gefahreneMeterRechnen(geschwindigkeit, 250);
 
             //"Einmal pro Sekunde" Prüfungen
             if(count % 4 == 0? true:false) {
                 pzb.schleichfahrtPruefen(geschwindigkeit);
                 pzb.vMaxPruefen(geschwindigkeit);
+                pzb.beeinflussungenVerstricheneZeitAktualisieren();
             }
             count++;
-
+            
             //PZB Überwachung ausführen
-            pzb.runPZB(geschwindigkeit);
-
+            pzb.runPZB(geschwindigkeit, letzteGefahreneStreckeAngaben);
+            
             //Zwangsbremsung eingeleitet?
             if(pzb.istZwangsbremsungAktiv && !zwangsbremsungEingeleitet) {
                 zwangsbremsungEingeleitet = true;
                 zwangsbremsungEingeleiten();
             }
-
+            
             //Ausführung unterbrechen
             if(!document.getElementById('pzbHauptschalter').checked) {
                 clearInterval(interval);
                 alleLMAusschalten();
             }
-
+            
         }, 250);
     }
     
@@ -70,4 +74,15 @@ document.getElementById('freiButton').addEventListener('click', () => {
     //console.log(pzb);
     pzb.frei(speedSlider.value);
     //console.log(pzb);
+});
+
+//Magnets aufrufen
+document.getElementById('1000HzAufrufenButton').addEventListener('click', ()=> {
+    pzb.neueBeeinflussungDurchMagnet(1000);
+    console.log("1000Hz Magnet aufgerufen!");
+});
+
+document.getElementById('500HzAufrufenButton').addEventListener('click', ()=> {
+    pzb.neueBeeinflussungDurchMagnet(500);
+    console.log("1000Hz Magnet aufgerufen!");
 });
