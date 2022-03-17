@@ -70,16 +70,19 @@ body {
 /* PZB Controls */
 .speed {
     justify-content: space-around;
-    width: 300px;
+    width: 600px;
 }
 
 .trainControls {
     color: white;
-    width: 30vw;
-    justify-content: space-between;
+    width: 50vw;
+    justify-content: space-around;
 }
 
 .pzbControl {
     cursor: pointer;
 }
 
+label {
+    color: white;
+}

@@ -47,9 +47,12 @@
                 <p>Train speed:</p>
                 <input type="range" name="Speed" id="speedSlider" min="0" max="180" value="0" oninput="sliderChange(this.value)">
                 <p id="speedIndicator">0</p>
+                <p>    Meters traveled:</p>
+                <p id="traveledMeters">0</p>
             </div>
         </div>
     </main>
+    <script src="scripts/environment.js" type="module"></script>
     <script src="scripts/pzb.js" type="module"></script>
     <script src="scripts/trainControls.js" type="module"></script>
     <script src="scripts/pzbLightCombinations.js" type="module"></script>
