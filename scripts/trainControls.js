@@ -1,19 +1,33 @@
 import {zwangsbremsungLM, alleLMAusschalten} from './pzbLightCombinations.js';
 import {ZugPZB, zugArtM, zugArtO, zugArtU} from './pzb.js';
-import { gefahreneMeter } from './environment.js';
 import { gefahreneMeterRechnen } from './utils.js';
 
 export let pzb = new ZugPZB(zugArtO);
 
+//Inputs
+let throttleLeverId = 'throttle';
+let throttleLever = document.getElementById('throttle');
+let brakeLeverId = 'brake';
+let brakeLever = document.getElementById('brake');
+const brakeLeverMax = 10;
+
+let leistungsregler = document.getElementById(throttleLeverId).value;
+let bremshebel = document.getElementById(brakeLeverId).value;
+export let geschwindigkeit = 0;
+
+//Outputs
+let tachometer = document.getElementById('speedIndicator');
+let tachometerSlider = document.getElementById('speedSlider');
+
+//Angaben
 let speedSlider = document.getElementById('speedSlider');
 let zwangsbremsungEingeleitet = false;
 
 export function zwangsbremsungEingeleiten() {
     zwangsbremsungLM(true); //TODO: Mit ZugPZB direkt verbinden
     let interval = setInterval( () => {
-        speedSlider.value = Math.max(parseInt(speedSlider.value)-1, 0);
-        //speedSlider.trigger('change');
-        sliderChange(speedSlider.value);
+        brakeLever.value = brakeLeverMax;
+        throttleLever.value = 0;
         
         //Wenn Zwangsbremsung von befreit
         if (!pzb.istZwangsbremsungAktiv) {  //TODO: Repalce for frei
@@ -25,8 +39,33 @@ export function zwangsbremsungEingeleiten() {
     },200);
 }
 
+//Geschwindigkeit nach Leistungsregler & Bremshebel aktualisieren
+setInterval(() => {
+    //Wert aktualisieren
+    leistungsregler = document.getElementById(throttleLeverId).value;
+    bremshebel = document.getElementById(brakeLeverId).value;
+
+    //Geschwindigkeit verändern
+    if(bremshebel > 0) {
+        geschwindigkeit = Math.round(Math.max(geschwindigkeit - bremshebel * 0.5, 0));
+    } else {
+        geschwindigkeit = Math.round(Math.min(geschwindigkeit + leistungsregler * 0.25, 180));
+    }
+    tachometer.innerHTML = geschwindigkeit;
+    tachometerSlider.value = geschwindigkeit;
+}, 500);
 
 /***** EVENT LISTENERS *****/
+
+//Leistungsregler
+document.getElementById(throttleLeverId).addEventListener('change', ()=>{
+    leistungsregler = document.getElementById(throttleLeverId).value;
+});
+
+//Bremshebel
+document.getElementById(throttleLeverId).addEventListener('change', ()=>{
+    bremshebel = document.getElementById(brakeLeverId).value;
+});
 
 //PZB ausführen
 document.getElementById('pzbHauptschalter').addEventListener('click', ()=>{
@@ -38,7 +77,6 @@ document.getElementById('pzbHauptschalter').addEventListener('click', ()=>{
         let count = 0;
 
         let interval = setInterval(() => {
-            let geschwindigkeit = speedSlider.value;
             let letzteGefahreneStreckeAngaben = gefahreneMeterRechnen(geschwindigkeit, 250);
 
             //"Einmal pro Sekunde" Prüfungen

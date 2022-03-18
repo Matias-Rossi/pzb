@@ -38,21 +38,22 @@
             </div>
         </div>
         <div class="trainControls flex">
+            <!-- Main Information -->
             <div class="speed flex">
-                <script>
-                    function sliderChange(val) {
-                       document.getElementById('speedIndicator').innerHTML = val;
-                    }
-                </script>
-                <p>Train speed:</p>
-                <input type="range" name="Speed" id="speedSlider" min="0" max="180" value="0" oninput="sliderChange(this.value)">
+                <p>Train speed:</p> 
+                <input type="range" name="Speed" id="speedSlider" min="0" max="180" value="0">
                 <p id="speedIndicator">0</p>
                 <p>    Meters traveled:</p>
                 <p id="traveledMeters">0</p>
             </div>
+            <!-- Train Controls -->
+            <div class="levers">
+                <label for="throttle">Throttle</label><input type="range" name="throttle" id="throttle" min="0" max="10" value="0">
+                <label for="brake">Brake</label><input type="range" name="brake" id="brake" min="0" max="10" value="7">
+            </div>
         </div>
-        <div id="1000HzAufrufenButton">1000Hz Aufrufen</div>
-        <div id="500HzAufrufenButton">500Hz Aufrufen</div>
+        <div class="uiButton" id="1000HzAufrufenButton">1000Hz Aufrufen</div>
+        <div class="uiButton" id="500HzAufrufenButton">500Hz Aufrufen</div>
     </main>
     <script src="scripts/environment.js" type="module"></script>
     <script src="scripts/pzb.js" type="module"></script>

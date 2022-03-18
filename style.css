@@ -35,6 +35,21 @@ body {
     margin-left: 20px;
 }
 
+.levers {
+    display: flex;
+    flex-direction: column;
+    width: 300px;
+}
+
+.levers label {
+    display: inline-block;
+}
+
+.levers input {
+    width: 200px;
+    display: inline-block;
+}
+
 /* HIGHER ROW INDICATORS */
 
 .blueSpeedLimit {
@@ -85,4 +100,16 @@ body {
 
 label {
     color: white;
+}
+
+/* META-UI */
+
+.uiButton {
+    text-justify: center;
+    border-radius: 5px;
+    width: 200px;
+    background-color: rgb(55, 55, 253);
+    padding: 10px 10px 10px 10px;
+    margin-top: 10px;
+    cursor: pointer;
 }
