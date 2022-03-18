@@ -23,7 +23,6 @@ function getSwitchNachBlaueGeschwindigkeit(blaueNummer) {
 }
 
 export function restriktiv() {
-    console.log("restriktiv xd");
     //switchLM70(blinker1);
     //switchLM85(blinker2);
     blinken(switchLM70, 1);
@@ -83,7 +82,6 @@ export function alleLMAusschalten() {
 }
 
 function blinken(leuchtmelderFunc, blinkerN) {
-    console.log('blinken');
     if(blinkerN == 1)
         blinker1Lichter.push(leuchtmelderFunc)
     else 

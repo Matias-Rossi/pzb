@@ -311,11 +311,13 @@ export class ZugPZB {
         if(anschalten && !this.restriktiverModus) {
             this.updateBeeinflussungenGeschwindigkeitbegrenzungen(true);
             this.restriktiverModus = true;
+            this.updateGezeigteBeeinflussung();
         } 
         //Ausschalten
         else if(!anschalten && this.restriktiverModus) {
             this.updateBeeinflussungenGeschwindigkeitbegrenzungen(false);
             this.restriktiverModus = false;
+            this.updateGezeigteBeeinflussung();
         }
     }
 
@@ -354,7 +356,8 @@ export class ZugPZB {
             this.zeitUnter10kmh = 0;
         } else {
             this.zeitUnter10kmh++;
-            if(this.zeitUnter10kmh > 15 && this.beeinflussungen.length > 0) {
+            if(this.zeitUnter10kmh > 15 && this.beeinflussungen.length > 0 && !this.restriktiverModus) {
+                console.log("restriktiver true");
                 this.restriktiverModusSchalten(true);
             }
         }
