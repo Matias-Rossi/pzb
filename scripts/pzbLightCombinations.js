@@ -30,10 +30,11 @@ export function restriktiv() {
     return !blinker1;
 }
 
-export function zwangsbremsungLM(istAktiv) {
-    switchLMS(istAktiv);
-    //switchLM1000Hz(blinker1);
-    //blinken(switchLM1000Hz, 1);
+//TODO: Check
+export function zwangsbremsungLM() {
+    switchLMS(true);
+    switchLM1000Hz(blinker1);
+    blinken(switchLM1000Hz, 1);
 }
 
 export function blauKonstanterLM(bs) {
@@ -47,7 +48,7 @@ export function _1000HzLM(phase, bs) {
     switch(phase) {
         case 0: 
         //case 1: blauerLM(blinker1); switchLM1000Hz(true); break;
-        case 1: blinken(blauerLM, 1); switchLM1000Hz(true); break;
+        case 1: blinken(blauerLM, 2); switchLM1000Hz(true); break;
         //case 2: blauerLM(blinker1); break;
         case 2: blinken(blauerLM, 2); break;
         case 3: break;

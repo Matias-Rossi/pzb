@@ -226,7 +226,6 @@ export class ZugPZB {
 
             //Neue 1000Hz Beeinflussung 
             else {
-                //TODO: Add 1000 Hz restriction to background
                 let _1000HzBeeinflussungIndex = this.beeinflussungen.findIndex(_beeinf => _beeinf.art);
                 if(_1000HzBeeinflussungIndex !== -1) {
                     this.beeinflussungen[_1000HzBeeinflussungIndex].verstricheneZeit = 0;
@@ -252,6 +251,10 @@ export class ZugPZB {
                 this.beeinflussungen[_1000HzBeeinflussungIndex].verstricheneZeit = 0;
                 this.beeinflussungen[_1000HzBeeinflussungIndex].gefahreneStrecke = 0;
             }
+
+            //Wenn restiktiver Modus aktiv ist, 200 Meter hinzufügen
+            if(this.restriktiverModus) this.verbleibendeRestriktivStrecke = 200;
+
         }
         // Keine vorhandenen Beeinflussungen
         else {
@@ -297,12 +300,18 @@ export class ZugPZB {
             return;
         }
 
-        //Restriktiver Modus ausschalten, wenn möglich
-        if(this.beeinflussungen.length === 0 && !this.istZwangsbremsungAktiv) this.restriktiverModusSchalten(false);
-
+        //Von Startprogramm Überwachung befreien
+        if(this.beeinflussungen.length === 1 && this.beeinflussungen[0].art === 0) {
+            this.beeinflussungen.pop();
+            this.restriktiverModusSchalten(false);
+        }
+        
         //Von Beeinflusungen befreien
         if(this.beeinflussungen.some(_beeinf => {return _beeinf.art === 1000 && _beeinf.darfBefreitWerden;})) this.abstandSeit1000Frei = 0;
         this.beeinflussungen = this.beeinflussungen.filter(_beeinf => {return !_beeinf.darfBefreitWerden});
+
+        //Restriktiver Modus ausschalten, wenn möglich (Keine Beeinflussungen ausser Startprogramm)
+        if(this.beeinflussungen.length === 0 && !this.istZwangsbremsungAktiv) this.restriktiverModusSchalten(false);
 
         //TODO: Refresh gezeigte Beeinflussung
         this.abstandSeitFrei = 0;
@@ -314,10 +323,27 @@ export class ZugPZB {
     restriktiverModusSchalten(anschalten) {
         //Restriktiv Modus anschalten
         if(anschalten && !this.restriktiverModus) {
+
+            //Wenn eine Beeinflussung aktiv ist
+            if(this.beeinflussungen[0]) {
+
+                //500Hz Fälle
+                if(this.beeinflussungen[0] && this.beeinflussungen[0].art == 500){
+                    //Kurze restriktive Überwachung
+                    if(this.beeinflussungen[0].gefahreneStrecke <= 100) this.verbleibendeRestriktivStrecke = 200
+                    //Lange
+                    else this.verbleibendeRestriktivStrecke = 250;
+                }
+    
+                //1000Hz Fall
+                if(this.beeinflussungen[0] && this.beeinflussungen[0].art == 1000) this.verbleibendeRestriktivStrecke = 1250 - this.beeinflussungen[0].gefahreneStrecke;
+            }
+
             this.updateBeeinflussungenGeschwindigkeitbegrenzungen(true);
             this.restriktiverModus = true;
             this.updateGezeigteBeeinflussung();
         } 
+
         //Ausschalten
         else if(!anschalten && this.restriktiverModus) {
             this.updateBeeinflussungenGeschwindigkeitbegrenzungen(false);
@@ -329,23 +355,28 @@ export class ZugPZB {
     zwangsbremsungEingeleiten() {
         this.istZwangsbremsungAktiv = true;
         console.error("PZB is triggering Zwangsbremsung")
+        this.updateGezeigteBeeinflussung();
         //TODO: Activate train brake in trainControls.js
     }
 
     updateGezeigteBeeinflussung() {
         alleLMAusschalten();
 
+        //Zwangsbremsung
+        if(this.istZwangsbremsungAktiv) {
+            zwangsbremsungLM();
+            return;
+        }
+        
         //Geschwindigkeitsüberschreitung
         if(this.geschwindigkeitsueberschreitung > 0) geschwindigkeitsueberschreitungLM();
 
         //Restriktiver Modus
         if(this.restriktiverModus) restriktiv();
 
-        //Zwangsbremsung
-        zwangsbremsungLM(this.istZwangsbremsungAktiv);
 
         //Ohne beeinflussungen
-        if(this.beeinflussungen == 0 && !this.restriktiverModus) blauKonstanterLM(this.blaueLM);
+        if(this.beeinflussungen == 0 && !this.restriktiverModus) blauKonstanterLM(this.blaueLM); //TODO: blaueLM? find better variable name
 
         else if(this.beeinflussungen == 0);
 
@@ -424,7 +455,7 @@ export class ZugPZB {
         });
 
         //Restriktiver Modus
-        if(this.verbleibendeRestriktivStrecke === 0 && this.beeinflussungen.length === 0) {
+        if(this.verbleibendeRestriktivStrecke === 0) {
             this.restriktiverModusSchalten(false);
             aenderung = true;
         }
@@ -436,9 +467,10 @@ export class ZugPZB {
 
         let phase3 = new Beeinflussung(0, this.zugArt.magnetVMax(1000, 3), this.zugArt.getAktivierungKriterium(1000, 3), true, null);
         let phase2 = new Beeinflussung(0, this.zugArt.magnetVMax(1000, 2), this.zugArt.getAktivierungKriterium(1000, 2), true, phase3);
-        let phase1 = new Beeinflussung(0, this.zugArt.magnetVMax(1000, 1), this.zugArt.getAktivierungKriterium(1000, 1), false, phase2);
+        let phase1 = new Beeinflussung(0, this.zugArt.magnetVMax(1000, 1), this.zugArt.getAktivierungKriterium(1000, 1), true, phase2);
 
         phase1.gefahreneStrecke = 700;
+        this.verbleibendeRestriktivStrecke = 550;
         phase1.phase = 1;
         
         this.restriktiverModusSchalten(true);
