@@ -220,7 +220,6 @@ export class ZugPZB {
                 let _ind = _500HzBeeinflussungIndex;
                 this.beeinflussungen[_ind].verstricheneZeit = 0;
                 this.beeinflussungen[_ind].gefahreneStrecke = 0;
-                //TODO: Restriktiv Modus handeln
                 return;
             }
 
@@ -235,21 +234,21 @@ export class ZugPZB {
                     this.beeinflussungen.push(beeinflussung);
                     return;
                 }
-                //TODO: Restriktiv Modus handeln
             }
         }
 
         //Derzeit ist eine 1000 Hz Beeinflussung aktiv
         else if(_1000HzBeeinflussungIndex !== -1) {
             if(beeinflussung.art === 500) {
-                //TODO: Add 500 Hz on top of 1000 Hz
+                //Add 500 Hz on top of 1000 Hz
                 let _ind = this.beeinflussungen.findIndex(_beeinf => _beeinf.art);
                 this.beeinflussungen[_ind + 1] = this.beeinflussungen[_ind];
                 this.beeinflussungen[_ind] = beeinflussung;
             } else {
-                //TODO: Refresh 1000 Hz restriction
+                //Refresh 1000 Hz restriction
                 this.beeinflussungen[_1000HzBeeinflussungIndex].verstricheneZeit = 0;
                 this.beeinflussungen[_1000HzBeeinflussungIndex].gefahreneStrecke = 0;
+                //TODO: Force 1000 Hz 1-time flash
             }
 
             //Wenn restiktiver Modus aktiv ist, 200 Meter hinzufügen
@@ -258,13 +257,13 @@ export class ZugPZB {
         }
         // Keine vorhandenen Beeinflussungen
         else {
-            //TODO: Add new restriction
+            //Beeinflussung hinzufügen
             this.beeinflussungen.push(beeinflussung);
         }
 
         //Abstand seit letzte Frei input prüfen. TODO: Could be added inside else over this line.
-        if(this.abstandSeitFrei < 550); //TODO: Trigger Zwangsbremsung
-        if(this.abstandSeit1000Frei < 1250 && beeinflussung.art === 500); //TODO: Trigger Zwangsbremsung
+        if(this.abstandSeitFrei < 550) this.zwangsbremsungEingeleiten();
+        if(this.abstandSeit1000Frei < 1250 && beeinflussung.art === 500) this.zwangsbremsungEingeleiten();
         if(this.abstandSeit1000Frei < 1250 && beeinflussung.art === 1000);//TODO: BS becomes active immediatly
     }
 
@@ -285,8 +284,6 @@ export class ZugPZB {
         this.beeinflussungen.forEach((_beeinf) => {
             _beeinf.geschwindigkeitsbegrenzung = this.zugArt.magnetVMax(_beeinf.art, restriktiv);
         });
-
-        //TODO: besondere restriktive Überwachung hinzufügen/entfernen
     } 
 
     //Von möglichen Beeinflussungen 'befreien'
@@ -313,10 +310,8 @@ export class ZugPZB {
         //Restriktiver Modus ausschalten, wenn möglich (Keine Beeinflussungen ausser Startprogramm)
         if(this.beeinflussungen.length === 0 && !this.istZwangsbremsungAktiv) this.restriktiverModusSchalten(false);
 
-        //TODO: Refresh gezeigte Beeinflussung
         this.abstandSeitFrei = 0;
         this.updateGezeigteBeeinflussung();
-
     }
 
     //Restriktiv Modus an oder aus (wenn möglich) schalten
@@ -356,7 +351,6 @@ export class ZugPZB {
         this.istZwangsbremsungAktiv = true;
         console.error("PZB is triggering Zwangsbremsung")
         this.updateGezeigteBeeinflussung();
-        //TODO: Activate train brake in trainControls.js
     }
 
     updateGezeigteBeeinflussung() {
@@ -367,7 +361,7 @@ export class ZugPZB {
             zwangsbremsungLM();
             return;
         }
-        
+
         //Geschwindigkeitsüberschreitung
         if(this.geschwindigkeitsueberschreitung > 0) geschwindigkeitsueberschreitungLM();
 
