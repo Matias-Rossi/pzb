@@ -170,7 +170,7 @@ export class ZugPZB {
         this.zugArt = zugArt;
         this.gezeigteBeeinflussung = null;
         this.beeinflussungen = [];              //Sorted from more to less restrictive
-        this.restriktiverModus = true;
+        this.restriktiverModus = false;
         this.istZwangsbremsungAktiv = false;
         this.leuchtmelder = 'restriktiv';
         this.abstandSeitFrei = 0;
@@ -179,6 +179,8 @@ export class ZugPZB {
         this.zeitUnter10kmh = 0;
         this.geschwindigkeitsueberschreitung = 0;   //0 = Keine Überschreitung; 1 = Überschreitung; 2 = ZB durch Überschreitung
         this.zeitUeberVmax = 0;
+        this.verbleibendeRestriktivStrecke = 0;
+        this.startProgrammAusgefuehrt = false;
     }
 
     neueBeeinflussungDurchMagnet(magnetHz) {
@@ -270,6 +272,9 @@ export class ZugPZB {
         });
         let restriktiveVMaxUeberschreiten = this.restriktiverModus? 45 < aktuelleGeschwindigkeit : false;
         if(beeinflussungUeberschreiten || restriktiveVMaxUeberschreiten) this.zwangsbremsungEingeleiten();
+
+        //Startprogramm Prüfung
+        if(aktuelleGeschwindigkeit >= 5 && !this.startProgrammAusgefuehrt) this.startProgrammAusfuehren();
     }
 
     //Beeinflussungen nach restriktiver Modus aktualisieren
@@ -382,9 +387,13 @@ export class ZugPZB {
     }
 
     beeinflussungenGefahreneStreckeAktualisieren(gefahreneMeter) {
+        //Beeinflussungen
         this.beeinflussungen.forEach(_beeinf => {
             _beeinf.gefahreneStrecke += gefahreneMeter;
         });
+
+        //Restriktiver Modus
+        this.verbleibendeRestriktivStrecke = Math.max(this.verbleibendeRestriktivStrecke - gefahreneMeter, 0);
     }
 
     beeinflussungenVerstricheneZeitAktualisieren() {
@@ -395,6 +404,8 @@ export class ZugPZB {
     }
 
     abgelaufeneBeeinflussungenPruefen() {
+
+        //Beeinflussungen
         let phase4Index = this.beeinflussungen.findIndex((_beeinf)=>{
             return _beeinf.phase === 3? true : false;
         });
@@ -403,16 +414,39 @@ export class ZugPZB {
             console.log("Abgelaufen Beeinflusung entfernt!");
         }
 
-        let phaseVeraendert = false;
+        let aenderung = false;
         this.beeinflussungen.forEach(_beeinf => {
             if(_beeinf.istAbgelaufen()) {
                 _beeinf.folgendeBeeinflussungAktivieren();
-                phaseVeraendert = true;
+                aenderung = true;
                 console.log("Beeinf. " + _beeinf.art + " changed to phase " + _beeinf.phase);
             }
         });
 
-        if(phaseVeraendert) this.updateGezeigteBeeinflussung();
+        //Restriktiver Modus
+        if(this.verbleibendeRestriktivStrecke === 0 && this.beeinflussungen.length === 0) {
+            this.restriktiverModusSchalten(false);
+            aenderung = true;
+        }
+
+        if(aenderung) this.updateGezeigteBeeinflussung();
+    }
+
+    startProgrammAusfuehren() {
+
+        let phase3 = new Beeinflussung(0, this.zugArt.magnetVMax(1000, 3), this.zugArt.getAktivierungKriterium(1000, 3), true, null);
+        let phase2 = new Beeinflussung(0, this.zugArt.magnetVMax(1000, 2), this.zugArt.getAktivierungKriterium(1000, 2), true, phase3);
+        let phase1 = new Beeinflussung(0, this.zugArt.magnetVMax(1000, 1), this.zugArt.getAktivierungKriterium(1000, 1), false, phase2);
+
+        phase1.gefahreneStrecke = 700;
+        phase1.phase = 1;
+        
+        this.restriktiverModusSchalten(true);
+        this.beeinflussungHinzufuegen(phase1);
+        this.updateGezeigteBeeinflussung();
+
+        this.startProgrammAusgefuehrt = true;
+        console.log('Startprogramm ausgeführt');
     }
 
     /*** run PZB ***/
