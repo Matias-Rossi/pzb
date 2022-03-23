@@ -39,7 +39,7 @@
 * 
 * Train driver has 2.5 seconds to press 'PZB Wachsam' when going over a magnet.
 */
-import { blauKonstanterLM, restriktiv, zwangsbremsungLM, _1000HzLM, _500HzLM, alleLMAusschalten, geschwindigkeitsueberschreitungLM } from "./pzbLightCombinations.js";
+import { blauKonstanterLM, restriktiv, zwangsbremsungLM, _1000HzLM, _500HzLM, alleLMAusschalten, geschwindigkeitsueberschreitungLM, _1000HzEinmalBlinken } from "./pzbLightCombinations.js";
 //import { blinker1, blinker2 } from './lightController.js'
 
 
@@ -183,9 +183,12 @@ export class ZugPZB {
         this.startProgrammAusgefuehrt = false;
     }
 
+    start() {
+        this.updateGezeigteBeeinflussung();
+    }
+
     neueBeeinflussungDurchMagnet(magnetHz) {
         let geschwindigkeitsbegrenzung;
-        this.abstandSeit1000Frei = 1251;   //TODO: Fix
         if(magnetHz === 1000 &&  this.abstandSeit1000Frei < 1250)
             geschwindigkeitsbegrenzung = this.zugArt.magnetVMax(magnetHz, 1, this.restriktiverModus);
         else 
@@ -202,7 +205,10 @@ export class ZugPZB {
         this.updateGezeigteBeeinflussung();
         console.log('Added Beeinflussung');
         console.log(phase0);
-        //TODO: Leuchtmelder und Inputs handlen
+
+        //Besondere Fälle prüfen
+        if(this.abstandSeitFrei < 550 && this.startProgrammAusgefuehrt) {this.zwangsbremsungEingeleiten();console.log("Zwangbremsung in 206")}
+        if(this.abstandSeit1000Frei < 1250 && magnetHz === 500) {this.zwangsbremsungEingeleiten();console.log("Zwangbremsung in 207")}
     }
 
     beeinflussungHinzufuegen(beeinflussung) {
@@ -236,6 +242,7 @@ export class ZugPZB {
                 }
             }
         }
+        
 
         //Derzeit ist eine 1000 Hz Beeinflussung aktiv
         else if(_1000HzBeeinflussungIndex !== -1) {
@@ -249,6 +256,7 @@ export class ZugPZB {
                 this.beeinflussungen[_1000HzBeeinflussungIndex].verstricheneZeit = 0;
                 this.beeinflussungen[_1000HzBeeinflussungIndex].gefahreneStrecke = 0;
                 //TODO: Force 1000 Hz 1-time flash
+                _1000HzEinmalBlinken();
             }
 
             //Wenn restiktiver Modus aktiv ist, 200 Meter hinzufügen
@@ -261,10 +269,6 @@ export class ZugPZB {
             this.beeinflussungen.push(beeinflussung);
         }
 
-        //Abstand seit letzte Frei input prüfen. TODO: Could be added inside else over this line.
-        if(this.abstandSeitFrei < 550) this.zwangsbremsungEingeleiten();
-        if(this.abstandSeit1000Frei < 1250 && beeinflussung.art === 500) this.zwangsbremsungEingeleiten();
-        if(this.abstandSeit1000Frei < 1250 && beeinflussung.art === 1000);//TODO: BS becomes active immediatly
     }
 
     //Bei Überschreiten der Überwachungsgeschwindigkeit Zwangsbremsung eingeleiten
@@ -354,6 +358,8 @@ export class ZugPZB {
     }
 
     updateGezeigteBeeinflussung() {
+        console.log("Updating display");
+
         alleLMAusschalten();
 
         //Zwangsbremsung
@@ -367,7 +373,6 @@ export class ZugPZB {
 
         //Restriktiver Modus
         if(this.restriktiverModus) restriktiv();
-
 
         //Ohne beeinflussungen
         if(this.beeinflussungen == 0 && !this.restriktiverModus) blauKonstanterLM(this.blaueLM); //TODO: blaueLM? find better variable name
@@ -419,6 +424,10 @@ export class ZugPZB {
 
         //Restriktiver Modus
         this.verbleibendeRestriktivStrecke = Math.max(this.verbleibendeRestriktivStrecke - gefahreneMeter, 0);
+
+        //Gefahrene Strecke angaben
+        this.abstandSeit1000Frei += gefahreneMeter;
+        this.abstandSeitFrei += gefahreneMeter;
     }
 
     beeinflussungenVerstricheneZeitAktualisieren() {
@@ -449,12 +458,14 @@ export class ZugPZB {
         });
 
         //Restriktiver Modus
-        if(this.verbleibendeRestriktivStrecke === 0) {
+        if(this.verbleibendeRestriktivStrecke === 0 && this.restriktiverModus) {
             this.restriktiverModusSchalten(false);
             aenderung = true;
         }
 
         if(aenderung) this.updateGezeigteBeeinflussung();
+        //console.log(aenderung?"abgelaufeneBeeinflusungenPruefen":"Nop");
+        
     }
 
     startProgrammAusfuehren() {

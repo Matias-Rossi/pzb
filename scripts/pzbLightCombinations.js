@@ -23,14 +23,11 @@ function getSwitchNachBlaueGeschwindigkeit(blaueNummer) {
 }
 
 export function restriktiv() {
-    //switchLM70(blinker1);
-    //switchLM85(blinker2);
     blinken(switchLM70, 1);
     blinken(switchLM85, 2);
     return !blinker1;
 }
 
-//TODO: Check
 export function zwangsbremsungLM() {
     switchLMS(true);
     switchLM1000Hz(blinker1);
@@ -84,9 +81,9 @@ export function alleLMAusschalten() {
 
 function blinken(leuchtmelderFunc, blinkerN) {
     if(blinkerN == 1)
-        blinker1Lichter.push(leuchtmelderFunc)
+        blinker1Lichter.push(leuchtmelderFunc);
     else 
-        blinker2Lichter.push(leuchtmelderFunc)
+        blinker2Lichter.push(leuchtmelderFunc);
 }
 
 function blinkerIterator() {
@@ -96,4 +93,11 @@ function blinkerIterator() {
     blinker2Lichter.forEach((_lm) => {
         _lm(blinker2);
     });
+}
+
+export function _1000HzEinmalBlinken() {
+    switchLM1000Hz(false);
+    setTimeout(function () {
+        switchLM1000Hz(true);
+    }, 500);
 }

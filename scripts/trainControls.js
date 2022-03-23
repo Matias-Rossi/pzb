@@ -24,16 +24,14 @@ let speedSlider = document.getElementById('speedSlider');
 let zwangsbremsungEingeleitet = false;
 
 export function zwangsbremsungEingeleiten() {
-    //zwangsbremsungLM(true); //TODO: Mit ZugPZB direkt verbinden
     let interval = setInterval( () => {
         brakeLever.value = brakeLeverMax;
         throttleLever.value = 0;
         
         //Wenn Zwangsbremsung von befreit
-        if (!pzb.istZwangsbremsungAktiv) {  //TODO: Repalce for frei
+        if (!pzb.istZwangsbremsungAktiv) {
             clearInterval(interval);
             console.log("Zwangsbremsung ende");
-            //zwangsbremsungLM(false); //TODO: Mit ZugPZB direkt verbinden
             zwangsbremsungEingeleitet = false;
         };
     },200);
@@ -72,8 +70,8 @@ document.getElementById('pzbHauptschalter').addEventListener('click', ()=>{
 
     if(document.getElementById('pzbHauptschalter').checked){
 
-        pzb.restriktiverModus = true;
-        pzb.updateGezeigteBeeinflussung();
+        pzb.start()
+
         let count = 0;
 
         let interval = setInterval(() => {
