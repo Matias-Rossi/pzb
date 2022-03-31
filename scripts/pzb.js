@@ -293,7 +293,7 @@ export class ZugPZB {
                 //Refresh 1000 Hz restriction
                 this.beeinflussungen[_1000HzBeeinflussungIndex].verstricheneZeit = 0;
                 this.beeinflussungen[_1000HzBeeinflussungIndex].gefahreneStrecke = 0;
-                //TODO: Force 1000 Hz 1-time flash
+                //TODO: Force 1000 Hz 1-time flash. Not working properly.
                 _1000HzEinmalBlinken();
             }
 
