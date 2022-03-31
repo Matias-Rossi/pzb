@@ -6,26 +6,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PZB</title>
     <!-- CSS Import -->
-    <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="normalize.css">
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <main>
         <div id="interface">
             <div class="pzbContainer">
-                <table cellspacing="24">
+                <table>
                     <!-- Leuchtmelder -->
                     <tr class="speed">
-                        <td class="indicator blueSpeedLimit" id="lm55">55</td>
-                        <td class="indicator blueSpeedLimit" id="lm70">70</td>
-                        <td class="indicator blueSpeedLimit" id="lm85">85</td>
-                        <td class="indicator" id="lmG">G</td>
+                        <td class="indicator blueSpeedLimit bigFont" id="lm55">55</td>
+                        <td class="indicator blueSpeedLimit bigFont" id="lm70">70</td>
+                        <td class="indicator blueSpeedLimit bigFont" id="lm85">85</td>
+                        <td class="indicator bigFont" id="lmG">G</td>
                     </tr>
                     <tr class="status">
                         <td class="indicator" id="lmBefehl40">Befehl<br>40</td>
                         <td class="indicator" id="lm500Hz">500 Hz</td>
                         <td class="indicator" id="lm1000Hz">1000 Hz</td>
-                        <td class="indicator" id="lmS">S</td>
+                        <td class="indicator bigFont" id="lmS">S</td>
                     </tr>
                 </table>
             </div>
@@ -34,7 +34,7 @@
                     <img src="img/pzb/befehl.png" alt="Befehl Button" class="pzbControl" id="befehlButton">
                     <img src="img/pzb/freiInactive.png" alt="Frei Button" class="pzbControl" id="freiButton">
                     <img src="img/pzb/wachsamInactive.png" alt="Wachsam Button" class="pzbControl" id="wachsamButton">
-                    <input type="checkbox" name="pzbHauptschalter" id="pzbHauptschalter"><label for="pzbHauptschalter">PZB Hauptschalter</label>
+                    <input type="checkbox" name="pzbHauptschalter" id="pzbHauptschalter"><label for="pzbHauptschalter"> PZB On/Off</label>
                 </div>
             </div>
         </div>
@@ -49,8 +49,12 @@
             </div>
             <!-- Train Controls -->
             <div class="levers">
-                <label for="throttle">Throttle</label><input type="range" name="throttle" id="throttle" min="0" max="10" value="0">
-                <label for="brake">Brake</label><input type="range" name="brake" id="brake" min="0" max="10" value="7">
+                <div id="throttleGroup">
+                    <label for="throttle">Throttle</label><input type="range" name="throttle" id="throttle" min="0" max="10" value="0">
+                </div>
+                <div id="brakeGroup">
+                    <label for="brake">Brake</label><input type="range" name="brake" id="brake" min="0" max="10" value="7">
+                </div>
             </div>
         </div>
         <div class="magnetButtons flex">
