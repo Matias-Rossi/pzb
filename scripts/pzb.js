@@ -175,7 +175,7 @@ export class ZugPZB {
         this.leuchtmelder = 'restriktiv';
         this.abstandSeitFrei = 3000;        //Sicherer wert
         this.abstandSeit1000Frei = 3000;    //   ^
-        this.blaueLM = zugArt.bremskurve1000Hz.geschwindigkeitB;
+        this.blaueSL = zugArt.bremskurve1000Hz.geschwindigkeitB;
         this.zeitUnter10kmh = 0;
         this.geschwindigkeitsueberschreitung = 0;   //0 = Keine Überschreitung; 1 = Überschreitung; 2 = ZB durch Überschreitung
         this.zeitUeberVmax = 0;
@@ -433,15 +433,15 @@ export class ZugPZB {
         if(this.restriktiverModus) restriktiv();
 
         //Ohne beeinflussungen
-        if(this.beeinflussungen == 0 && !this.restriktiverModus) blauKonstanterLM(this.blaueLM); //TODO: blaueLM? find better variable name
+        if(this.beeinflussungen == 0 && !this.restriktiverModus) blauKonstanterLM(this.blaueSL);
 
         else if(this.beeinflussungen == 0);
 
         //1000Hz beeinflussung
-        else if(this.beeinflussungen[0].art == 1000)  _1000HzLM(this.beeinflussungen[0].phase, this.blaueLM);
+        else if(this.beeinflussungen[0].art == 1000)  _1000HzLM(this.beeinflussungen[0].phase, this.blaueSL);
         
         //500Hz beeinflussung
-        else if(this.beeinflussungen[0].art == 500)  _500HzLM(this.beeinflussungen[0].phase, this.blaueLM);
+        else if(this.beeinflussungen[0].art == 500)  _500HzLM(this.beeinflussungen[0].phase, this.blaueSL);
     }
 
     schleichfahrtPruefen(aktuelleGeschwindigkeit) {
