@@ -1,6 +1,6 @@
 # Punktförmige Zugbeeinflussung
 
-[Check it out!](https://pzb-sim.netlify.app/)
+[Check it out!](https://pzb-sim.netlify.app/) (Better on full-width desktop)
 
 ## About
 
