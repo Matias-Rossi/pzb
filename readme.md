@@ -34,12 +34,12 @@ The 1000Hz and 500Hz buttons allow the user to simulate travelling over an activ
 
 ### Limitations and planned improvements
 
-[] 1000Hz light does not flash when another 1000Hz restriction is already in place.
-[] All inputs are processed only when the click button is let go. E.g. "Wachsam" can not be held while travelling over a magnet.
-[] Add visual representation of distance travelled
-[] Add signal simulation instead of magnets alone
-[] Improve desktop interface (specially with lower width windows)
-[] Improve mobile interface
+- [ ] 1000Hz light does not flash when another 1000Hz restriction is already in place.
+- [ ] All inputs are processed only when the click button is let go. E.g. "Wachsam" can not be held while travelling over a magnet.
+- [ ] Add visual representation of distance travelled
+- [ ] Add signal simulation instead of magnets alone
+- [ ] Improve desktop interface (specially with lower width windows)
+- [ ] Improve mobile interface
 
 
 
