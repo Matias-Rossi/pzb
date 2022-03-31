@@ -95,9 +95,17 @@ function blinkerIterator() {
     });
 }
 
+//Ja, Code wurde hier wiederholt
 export function _1000HzEinmalBlinken() {
     switchLM1000Hz(false);
     setTimeout(function () {
         switchLM1000Hz(true);
+    }, 500);
+}
+
+export function _befehlEinmalBlinken() {
+    switchLMBefehl40(false);
+    setTimeout(function () {
+        switchLMBefehl40(true);
     }, 500);
 }

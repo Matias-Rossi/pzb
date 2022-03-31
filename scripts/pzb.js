@@ -39,7 +39,7 @@
 * 
 * Train driver has 2.5 seconds to press 'PZB Wachsam' when going over a magnet.
 */
-import { blauKonstanterLM, restriktiv, zwangsbremsungLM, _1000HzLM, _500HzLM, alleLMAusschalten, geschwindigkeitsueberschreitungLM, _1000HzEinmalBlinken } from "./pzbLightCombinations.js";
+import { blauKonstanterLM, restriktiv, zwangsbremsungLM, _1000HzLM, _500HzLM, alleLMAusschalten, geschwindigkeitsueberschreitungLM, _1000HzEinmalBlinken, _befehlEinmalBlinken } from "./pzbLightCombinations.js";
 //import { blinker1, blinker2 } from './lightController.js'
 
 
@@ -181,10 +181,43 @@ export class ZugPZB {
         this.zeitUeberVmax = 0;
         this.verbleibendeRestriktivStrecke = 0;
         this.startProgrammAusgefuehrt = false;
+
+        this.beistehendeMagnet = null;
+
+        //Eingaben
+        this.wachsamGedruckt = false;
+        this.befehlGedruckt = false;
     }
 
     start() {
         this.updateGezeigteBeeinflussung();
+    }
+
+    magnetHandler(magnetHz) {
+        if(magnetHz === 2000) {
+            if(!this.befehlGedruckt)
+                this.zwangsbremsungEingeleiten();
+            else
+                _befehlEinmalBlinken();
+                
+            return;
+        }
+        else {
+            //Wachsam Eingabe Überprüfen
+            this.wachsamGedruckt = false;
+            this.beistehendeMagnet = magnetHz;
+
+            setTimeout(() => {
+                if(this.wachsamGedruckt)
+                    return;
+                else {
+                    this.neueBeeinflussungDurchMagnet(magnetHz);
+                    this.zwangsbremsungEingeleiten();
+                }
+            }, 2.5);
+
+        }
+
     }
 
     neueBeeinflussungDurchMagnet(magnetHz) {
@@ -290,6 +323,15 @@ export class ZugPZB {
         });
     } 
 
+    //Wenn Befehl gedruckt wird
+    befehl() {
+        this.befehlGedruckt = true;
+
+        setTimeout(() => {
+            this.befehlGedruckt = false;
+        }, 2.5)
+    }
+
     //Von möglichen Beeinflussungen 'befreien'
     frei(aktuelleGeschwindigkeit) {
         
@@ -316,6 +358,15 @@ export class ZugPZB {
 
         this.abstandSeitFrei = 0;
         this.updateGezeigteBeeinflussung();
+    }
+
+    //Wenn Wachsam gedruckt wird
+    wachsam() {
+        this.wachsamGedruckt = true;
+        if(this.beistehendeMagnet != null) {
+            this.neueBeeinflussungDurchMagnet(this.beistehendeMagnet);
+            this.beistehendeMagnet = null;
+        }
     }
 
     //Restriktiv Modus an oder aus (wenn möglich) schalten

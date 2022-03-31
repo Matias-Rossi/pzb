@@ -105,12 +105,26 @@ document.getElementById('pzbHauptschalter').addEventListener('click', ()=>{
     
 });
 
+
+//PZB Controls
+//PZB Befehl
+document.getElementById('befehlButton').addEventListener('click', () => {
+    pzb.befehl();
+});
+
+
 //PZB Frei
 document.getElementById('freiButton').addEventListener('click', () => {
-    //console.log(pzb);
     pzb.frei(speedSlider.value);
-    //console.log(pzb);
 });
+
+
+//PZB Wachsam
+document.getElementById('wachsamButton').addEventListener('click', () => {
+    pzb.wachsam();
+});
+//PZB Controls Ende
+
 
 //Magnets aufrufen
 document.getElementById('1000HzAufrufenButton').addEventListener('click', ()=> {
