@@ -24,7 +24,7 @@ The system is not trivial to use. It's not hard, but it isn't intuitive.
 
 The "train" can be controlled by using the throttle and brake, just like a car. The "Train speed" slider is there only to have a visual representation of the current speed, changing it does not affect the simulation.
 
-The "PZB On/Off" switch toggles the PZB system on and off. I recommend turning it on only while stopped, otherwise you could trigger an emergency stop.
+The "PZB On/Off" switch toggles the PZB system on and off. I recommend turning it on only while stopped, otherwise an emergency stop could be triggered.
 
 Now comes the interesting part, the PZB system itself, from left to right, the following buttons are available:
 
