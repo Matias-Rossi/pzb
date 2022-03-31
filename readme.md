@@ -4,11 +4,11 @@
 
 ### What do we call PZB?
 
-There is a great article in Wikipedia covering it, available both in (German)[https://de.wikipedia.org/wiki/Punktf%C3%B6rmige_Zugbeeinflussung] and (English)[https://en.wikipedia.org/wiki/Punktf%C3%B6rmige_Zugbeeinflussung].
+There is a great article in Wikipedia covering it, available both in [German](https://de.wikipedia.org/wiki/Punktf%C3%B6rmige_Zugbeeinflussung) and [English](https://en.wikipedia.org/wiki/Punktf%C3%B6rmige_Zugbeeinflussung).
 
 ### Why code it?
 
-I have been interested in railroad signalling and safety systems for a long time. I figured out it would be fun trying to code one, so I did. PZB seemed like a good start. Regarding why I coded it using German variable names, I did just because it removed the need of translating (the manual I used as source)[https://fahrweg.dbnetze.com/resource/blob/1356070/261ffe250bcb5eaf3cdca6f34b048e87/rw_483-0113-data.pdf] and forced me to practice a bit of German.
+I have been interested in railroad signalling and safety systems for a long time. I figured out it would be fun trying to code one, so I did. PZB seemed like a good start. Regarding why I coded it using German variable names, I did just because it removed the need of translating [the manual I used as source](https://fahrweg.dbnetze.com/resource/blob/1356070/261ffe250bcb5eaf3cdca6f34b048e87/rw_483-0113-data.pdf) and forced me to practice a bit of German. I loved working on this project.
 
 ### Why this presentation?
 
