@@ -206,7 +206,7 @@ export class ZugPZB {
             //Wachsam Eingabe Überprüfen
             this.wachsamGedruckt = false;
             this.beistehendeMagnet = magnetHz;
-            console.log("Magnet ran over");
+            console.log("Magnet erkannt");
 
             setTimeout(() => {
                 console.log("Time out!");
@@ -239,14 +239,12 @@ export class ZugPZB {
         let phase0 = new Beeinflussung(magnetHz, geschwindigkeitsbegrenzung, aktivierung, false, phase1);
         
         this.beeinflussungHinzufuegen(phase0);
-        //this.gezeigteBeeinflussung = this.beeinflussungen[0];
         this.updateGezeigteBeeinflussung();
         console.log('Added Beeinflussung');
-        console.log(phase0);
 
         //Besondere Fälle prüfen
-        if(this.abstandSeitFrei < 550 && this.startProgrammAusgefuehrt) {this.zwangsbremsungEingeleiten();console.log("Zwangbremsung in 206")}
-        if(this.abstandSeit1000Frei < 1250 && magnetHz === 500) {this.zwangsbremsungEingeleiten();console.log("Zwangbremsung in 207")}
+        if(this.abstandSeitFrei < 550 && this.startProgrammAusgefuehrt) this.zwangsbremsungEingeleiten();
+        if(this.abstandSeit1000Frei < 1250 && magnetHz === 500) this.zwangsbremsungEingeleiten();
     }
 
     beeinflussungHinzufuegen(beeinflussung) {
@@ -491,7 +489,6 @@ export class ZugPZB {
     beeinflussungenVerstricheneZeitAktualisieren() {
         this.beeinflussungen.forEach(_beeinf => {
             _beeinf.verstricheneZeit++;
-            //console.log('verstrichene Zeit: ' + _beeinf.verstricheneZeit);
         });
     }
 
@@ -522,7 +519,6 @@ export class ZugPZB {
         }
 
         if(aenderung) this.updateGezeigteBeeinflussung();
-        //console.log(aenderung?"abgelaufeneBeeinflusungenPruefen":"Nop");
         
     }
 

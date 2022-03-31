@@ -143,7 +143,6 @@ function setMagnetTimer(magnetHz, buttonId) {
 
         let timer = 5;
         let interval = setInterval(() => {
-            //console.log(timer + " until " + magnetHz + " Magnet");
             document.getElementById(buttonId).innerHTML = timer + " until " + magnetHz + " Magnet";
             timer--;
             if(timer === -1){
