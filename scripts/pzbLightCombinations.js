@@ -58,7 +58,7 @@ export function _500HzLM(phase, bs) {
     switch(phase) {
         case 0: 
         case 1: 
-        case 2: switchLM500Hz(true); break;
+        case 2: switchLM500Hz(true); blauerLM(true); break;
         case 3: break;
     }
 }
