@@ -127,12 +127,53 @@ document.getElementById('wachsamButton').addEventListener('click', () => {
 
 
 //Magnets aufrufen
+let magnetInDerWarteschlange = false;
+
+//TODO: Fix code repetition
 document.getElementById('1000HzAufrufenButton').addEventListener('click', ()=> {
-    pzb.neueBeeinflussungDurchMagnet(1000);
-    console.log("1000Hz Magnet aufgerufen!");
+    magnetInDerWarteschlange = true;
+    let timer = 5;
+    let interval = setInterval(() => {
+        console.log(timer + " until 1000Hz Magnet");
+        timer--;
+        if(timer === -1){
+            pzb.magnetHandler(1000);
+            console.log("1000Hz Magnet aufgerufen!");
+            magnetInDerWarteschlange = false;
+            clearInterval(interval);
+        }
+    }, 1000)
 });
 
 document.getElementById('500HzAufrufenButton').addEventListener('click', ()=> {
-    pzb.neueBeeinflussungDurchMagnet(500);
-    console.log("1000Hz Magnet aufgerufen!");
+    magnetInDerWarteschlange = true;
+    let timer = 5;
+    let interval = setInterval(() => {
+        console.log(timer + " until 500Hz Magnet");
+        document.getElementById('500HzAufrufenButton').innerHTML = timer + " until 500Hz Magnet";
+        timer--;
+        if(timer === -1){
+            pzb.magnetHandler(500);
+            console.log("500Hz Magnet aufgerufen!");
+            magnetInDerWarteschlange = false;
+            document.getElementById('500HzAufrufenButton').innerHTML = "500Hz Aufrufen";
+            clearInterval(interval);
+        }
+    }, 1000)
 });
+
+function setMagnetTimer(magnetHz, buttonId) {
+    let timer = 5;
+    let interval = setInterval(() => {
+        //console.log(timer + " until " + magnetHz + " Magnet");
+        document.getElementById(buttonId).innerHTML = timer + " until " + magnetHz + " Magnet";
+        timer--;
+        if(timer === -1){
+            pzb.magnetHandler(magnetHz);
+            console.log(magnetHz + " Magnet aufgerufen!");
+            magnetInDerWarteschlange = false;
+            document.getElementById(buttonId).innerHTML = magnetHz + " Aufrufen";
+            clearInterval(interval);
+        }
+    }, 1000)
+}

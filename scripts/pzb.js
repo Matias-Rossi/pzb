@@ -173,8 +173,8 @@ export class ZugPZB {
         this.restriktiverModus = false;
         this.istZwangsbremsungAktiv = false;
         this.leuchtmelder = 'restriktiv';
-        this.abstandSeitFrei = 0;
-        this.abstandSeit1000Frei = 0;
+        this.abstandSeitFrei = 3000;        //Sicherer wert
+        this.abstandSeit1000Frei = 3000;    //   ^
         this.blaueLM = zugArt.bremskurve1000Hz.geschwindigkeitB;
         this.zeitUnter10kmh = 0;
         this.geschwindigkeitsueberschreitung = 0;   //0 = Keine Überschreitung; 1 = Überschreitung; 2 = ZB durch Überschreitung
@@ -199,23 +199,28 @@ export class ZugPZB {
                 this.zwangsbremsungEingeleiten();
             else
                 _befehlEinmalBlinken();
-                
+
             return;
         }
-        else {
+        else if(magnetHz === 1000) {
             //Wachsam Eingabe Überprüfen
             this.wachsamGedruckt = false;
             this.beistehendeMagnet = magnetHz;
+            console.log("Magnet ran over");
 
             setTimeout(() => {
+                console.log("Time out!");
                 if(this.wachsamGedruckt)
                     return;
                 else {
                     this.neueBeeinflussungDurchMagnet(magnetHz);
                     this.zwangsbremsungEingeleiten();
                 }
-            }, 2.5);
+            }, 2500);
 
+        }
+        else if(magnetHz === 500) {
+            this.neueBeeinflussungDurchMagnet(magnetHz);
         }
 
     }
@@ -299,7 +304,7 @@ export class ZugPZB {
         // Keine vorhandenen Beeinflussungen
         else {
             //Beeinflussung hinzufügen
-            this.beeinflussungen.push(beeinflussung);
+            this.beeinflussungen.unshift(beeinflussung);
         }
 
     }
@@ -326,6 +331,7 @@ export class ZugPZB {
     //Wenn Befehl gedruckt wird
     befehl() {
         this.befehlGedruckt = true;
+        console.log("Befehl Eingegeben");
 
         setTimeout(() => {
             this.befehlGedruckt = false;
@@ -334,7 +340,7 @@ export class ZugPZB {
 
     //Von möglichen Beeinflussungen 'befreien'
     frei(aktuelleGeschwindigkeit) {
-        
+
         //Von der Zwangsbremsung befreien
         if(parseInt(aktuelleGeschwindigkeit) === 0 && this.istZwangsbremsungAktiv) {
             this.istZwangsbremsungAktiv = false;
@@ -362,6 +368,7 @@ export class ZugPZB {
 
     //Wenn Wachsam gedruckt wird
     wachsam() {
+        console.log("Wachsam Eingegeben");
         this.wachsamGedruckt = true;
         if(this.beistehendeMagnet != null) {
             this.neueBeeinflussungDurchMagnet(this.beistehendeMagnet);
