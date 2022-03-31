@@ -1,5 +1,7 @@
 # Punktförmige Zugbeeinflussung
 
+[Check it out!](https://pzb-sim.netlify.app/)
+
 ## About
 
 ### What do we call PZB?
