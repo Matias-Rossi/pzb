@@ -22,13 +22,13 @@ export function changeTextColor(lightElement, desiredStatus) {
     lightElement.style.color = desiredStatus? brightText : darkText;
 }
 
-
+/*
 document.getElementById("befehlButton").onmousedown = function(){testLights(1)};
 document.getElementById("befehlButton").onmouseup = function(){testLights(0)};
 function testLights(isPressed) {
     switchFunctions.forEach(fn => fn(isPressed));
 }
-
+*/
 
 //Individual light controllers
 
